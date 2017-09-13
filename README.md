@@ -10,7 +10,10 @@ TODO:
 
 ## Sample code
 
-* Make code compile again [Eggie]
+* Make code compile again [Eggie](done)
+
+Our API's shoul return a service name in their response, so it is clear by which instance a request
+was handled. Suggestion: use our own names for services to make it more lively.
 
 ## Slides [Effi]
 
