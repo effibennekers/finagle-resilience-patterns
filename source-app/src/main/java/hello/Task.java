@@ -12,9 +12,8 @@ public class Task extends Thread {
 
     private final CloseableHttpClient httpClient;
     private final int numberOfRuns;
-    private final HttpGet httpGet = new HttpGet("http://localhost:8080/greeting");
+    private final HttpGet httpGet = new HttpGet("http://localhost:8080/loadbalancing");
 
-    private final Random random = new Random();
 
     public Task(final CloseableHttpClient httpClient, int numberOfRuns) {
         this.httpClient = httpClient;

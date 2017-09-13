@@ -8,6 +8,24 @@ TODO:
 * User story for retry
 
 
+## User story load balancing
+
+Create a GET endpoint /loadbalancing
+
+Should return "<counter> loadbalance example from <instancename>"
+
+Question: simulate some processing by a (randomized) sleep?
+
+
+Scenario:
+* Run at two instances (effi and eggie)
+* with naive http client, there is no loadbalancing. Should we implement a simple one? (choose random
+which URL/port to use?)
+* Create/show finagle client. This should be much easier, and show 
+
+
+
+
 ## Sample code
 
 * Make code compile again [Eggie](done)
