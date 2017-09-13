@@ -1,0 +1,16 @@
+workspace/
+.project
+.settings
+.classpath
+.metadata
+.idea
+.factorypath
+*.iml
+*.pyc
+*.ipr
+*.iws
+target
+MANIFEST.MF
+bin
+*.log
+*.class
