@@ -14,26 +14,26 @@ import java.util.List;
 public class SourceApplication {
 
     private static final int NUMBER_OF_THREADS = 200;
-    private static final int NUMBER_OF_STEPS = 1000;
+    private static final int NUMBER_OF_STEPS = 10;
 
     public static void main(String[] args) {
 
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(2);
+        cm.setMaxTotal(200);
         cm.setDefaultMaxPerRoute(2);
         final HttpHost localhost = new HttpHost("locahost", 80);
-        cm.setMaxPerRoute(new HttpRoute(localhost), 5);
+        cm.setMaxPerRoute(new HttpRoute(localhost), 200);
 
 
         try (
-                CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
+                CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build()
         ) {
             final List<Task> tasks = new LinkedList<>();
             for (int i = 0; i < NUMBER_OF_THREADS; i++) {
-                tasks.add(new Task(httpClient, NUMBER_OF_STEPS));
+                tasks.add(new Task(httpClient, i, NUMBER_OF_STEPS));
             }
 
-            tasks.forEach(t -> t.start());
+            tasks.forEach(Thread::start);
             tasks.forEach(t -> {
                 try {
                     t.join();

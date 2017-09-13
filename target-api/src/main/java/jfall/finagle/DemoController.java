@@ -25,8 +25,9 @@ public class DemoController {
 
     @RequestMapping("/loadbalancing")
     public String getLoadbalancing() {
+        final long number = counter.incrementAndGet();
         simulateHeavyProcessing();
-        return String.format("%d loadbalancing example from %s", counter.incrementAndGet(), serviceName);
+        return String.format("%d loadbalancing example from %s", number, serviceName);
     }
 
     private void simulateHeavyProcessing() {
