@@ -1,36 +1,31 @@
 package hello;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Task extends Thread {
 
-    private final CloseableHttpClient httpClient;
     private final int numberOfRuns;
     private final int taskId;
-    private final HttpGet httpGet = new HttpGet("http://localhost:8080/loadbalancing");
+    private final Supplier<TaskResponse> executor;
+    private final Consumer<Integer> statusReporter;
 
 
-    public Task(final CloseableHttpClient httpClient, int taskId, int numberOfRuns) {
-        this.httpClient = httpClient;
+    public Task(int taskId, int numberOfRuns, Supplier<TaskResponse> executor, Consumer<Integer> statusReporter) {
         this.numberOfRuns = numberOfRuns;
         this.taskId = taskId;
+        this.executor = executor;
+        this.statusReporter = statusReporter;
+
     }
 
     @Override
     public void run() {
         System.err.println("started task # " + taskId);
         for (int i = 0; i < numberOfRuns; i++) {
-            try {
-                CloseableHttpResponse response1 = httpClient.execute(httpGet);
-                System.err.println("task #" + taskId + ": \"" + IOUtils.toString(response1.getEntity().getContent(), "UTF-8") + "\"");
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
+            final TaskResponse response = executor.get();
+            System.err.println("task #" + taskId + ": \"" + response.getResponse() + "\"");
+            statusReporter.accept(response.getHttpStatus());
         }
         System.err.println("stopped task # " + taskId);
     }
