@@ -24,8 +24,8 @@ public class Task extends Thread {
         System.err.println("started task # " + taskId);
         for (int i = 0; i < numberOfRuns; i++) {
             final TaskResponse response = executor.get();
-            System.err.println("task #" + taskId + ": \"" + response.getResponse() + "\"");
             statusReporter.accept(response.getHttpStatus());
+            System.err.println("task #" + taskId + ": \"" + response.getResponse() + "\"");
         }
         System.err.println("stopped task # " + taskId);
     }

@@ -22,19 +22,23 @@ public class LoadBalanceTest extends BaseTest {
         cm.setDefaultMaxPerRoute(2);
         final HttpHost localhost = new HttpHost("locahost", 80);
         cm.setMaxPerRoute(new HttpRoute(localhost), 200);
-        final HttpGet httpGet1 = new HttpGet("http://localhost:8080/loadbalancing");
-        final HttpGet httpGet2 = new HttpGet("http://localhost:8081/loadbalancing");
+        final HttpGet getFromEffi = new HttpGet("http://localhost:8080/loadbalancing");
+        final HttpGet getFromEggie = new HttpGet("http://localhost:8081/loadbalancing");
+
+        final HttpClientScenario effieScenario = new HttpClientScenario("loadbalancing_from_effi", getFromEffi);
+        final HttpClientScenario eggieScenario = new HttpClientScenario("loadbalancing_from_eggie", getFromEggie);
         final CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
+
         final Random random = new Random();
-        runTask(() ->
-        {
-            try (CloseableHttpResponse response1 = httpClient.execute(random.nextBoolean()? httpGet1: httpGet2)) {
-                return new TaskResponse(response1.getStatusLine().getStatusCode() , IOUtils.toString(response1.getEntity().getContent(), "UTF-8"));
+        runTask(() -> {
+            final HttpClientScenario scenario = random.nextBoolean() ? effieScenario : eggieScenario;
+            try (CloseableHttpResponse response1 = httpClient.execute(scenario.getGet())) {
+                return new TaskResponse(scenario.getDescription(), response1.getStatusLine().getStatusCode(), IOUtils.toString(response1.getEntity().getContent(), "UTF-8"));
             } catch (IOException e) {
-                return new TaskResponse(500, e.getMessage());
+                return new TaskResponse(scenario.getDescription(), 500, e.getMessage());
             }
 
         });
-
     }
+
 }
