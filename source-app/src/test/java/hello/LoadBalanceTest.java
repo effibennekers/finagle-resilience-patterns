@@ -11,31 +11,31 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class LoadBalanceTest extends BaseTest {
 
     @Test
-    public void testLoadbalancingWithHttpClient() {
+    public void testLoadbalancingWithApacheHttpClient() {
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(200);
         cm.setDefaultMaxPerRoute(2);
-        final HttpHost localhost = new HttpHost("locahost", 80);
-        cm.setMaxPerRoute(new HttpRoute(localhost), 200);
+        final HttpHost effieHost = new HttpHost("locahost", 8080);
+        cm.setMaxPerRoute(new HttpRoute(effieHost), 200);
+        final HttpHost eggieHost = new HttpHost("locahost", 8081);
+        cm.setMaxPerRoute(new HttpRoute(eggieHost), 200);
         final HttpGet getFromEffi = new HttpGet("http://localhost:8080/loadbalancing");
         final HttpGet getFromEggie = new HttpGet("http://localhost:8081/loadbalancing");
 
-        final HttpClientScenario effieScenario = new HttpClientScenario("loadbalancing_from_effi", getFromEffi);
-        final HttpClientScenario eggieScenario = new HttpClientScenario("loadbalancing_from_eggie", getFromEggie);
         final CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
 
-        final Random random = new Random();
+        final SecureRandom random = new SecureRandom();
         runTask(() -> {
-            final HttpClientScenario scenario = random.nextBoolean() ? effieScenario : eggieScenario;
-            try (CloseableHttpResponse response1 = httpClient.execute(scenario.getGet())) {
-                return new TaskResponse(scenario.getDescription(), response1.getStatusLine().getStatusCode(), IOUtils.toString(response1.getEntity().getContent(), "UTF-8"));
+            final HttpGet get = random.nextBoolean() ? getFromEffi : getFromEggie;
+            try (CloseableHttpResponse response1 = httpClient.execute(get)) {
+                return new TaskResponse(response1.getStatusLine().getStatusCode(), IOUtils.toString(response1.getEntity().getContent(), "UTF-8"));
             } catch (IOException e) {
-                return new TaskResponse(scenario.getDescription(), 500, e.getMessage());
+                return new TaskResponse(500, e.getMessage());
             }
 
         });
