@@ -5,6 +5,32 @@ var events = [];
 var windowSize = 10;
 var effiTps = 0;
 var eggieTps = 0;
+var effiSimulation = {};
+var eggieSimulation = {};
+
+function updateEffiSimulation() {
+    $('input[id="effiSimulationBasetime"]').val(effiSimulation.baseTime);
+    $('input[id="effiSimulationRandom"]').val(effiSimulation.random);
+    $('input[id="effiSimulationRandomMultiplier"]').val(effiSimulation.randomMultiplier);
+}
+function updateEggieSimulation() {
+    $('input[id="eggieSimulationBasetime"]').val(eggieSimulation.baseTime);
+    $('input[id="eggieSimulationRandom"]').val(eggieSimulation.random);
+    $('input[id="eggieSimulationRandomMultiplier"]').val(eggieSimulation.randomMultiplier);
+}
+
+$(document).ready(function() {
+    $('input[id="windowSize"]').val(windowSize);
+    $.get("http://localhost:8081/simulation", function (data) {
+        effiSimulation = data;
+        updateEffiSimulation();
+    }, "json");
+
+    $.get("http://localhost:8082/simulation", function (data) {
+        eggieSimulation = data;
+        updateEggieSimulation();
+    }, "json");
+});
 
 function connect() {
     var socket = new SockJS('/gs-guide-websocket');
@@ -30,7 +56,6 @@ function connect() {
 
 connect();
 refreshDisplay();
-$("#windowSize").text(10);
 
 
 $(function () {
@@ -91,7 +116,7 @@ function startLoadbalancing() {
         },
         'type': 'POST',
         'url': '/loadbalancing',
-        'data': JSON.stringify({'numberOfRuns': $("#callsPerThread").val(), 'numberOfThreads':$("#numberOfThreads").val()}),
+        'data': JSON.stringify({'numberOfRuns': $("#callsPerThread").val(), 'numberOfThreads': $("#numberOfThreads").val()}),
         'dataType': 'json'
     });
 
@@ -103,6 +128,48 @@ $(function () {
     });
     $("#loadbalancing").click(function () {
         startLoadbalancing();
+    });
+    $("#effiSettings").click(function () {
+        $.post({
+            crossOrigin:true,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'type': 'POST',
+            'url': 'http://localhost:8081/simulation',
+            'data': JSON.stringify({
+                baseTime: $('input[id="effiSimulationBasetime"]').val(),
+                random: $('input[id="effiSimulationRandom"]').val(),
+                randomMultiplier: $('input[id="effiSimulationRandomMultiplier"]').val(),
+            }),
+            'dataType': 'json'
+
+        }, function (data) {
+            effiSimulation = data;
+            updateEffiSimulation();
+        });
+    });
+    $("#eggieSettings").click(function () {
+        $.post({
+            crossOrigin:true,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'type': 'POST',
+            'url': 'http://localhost:8082/simulation',
+            'data': JSON.stringify({
+                baseTime: $('input[id="eggieSimulationBasetime"]').val(),
+                random: $('input[id="eggieSimulationRandom"]').val(),
+                randomMultiplier: $('input[id="eggieSimulationRandomMultiplier"]').val(),
+            }),
+            'dataType': 'json'
+
+        }, function (data) {
+            eggieSimulation = data;
+            updateEggieSimulation();
+        });
     });
     $("#reset").click(function () {
         events = [];

@@ -1,14 +1,15 @@
 package jfall.finagle;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
@@ -16,40 +17,47 @@ public class DemoController {
 
     private final AtomicLong counter = new AtomicLong();
 
-    private Random random = new Random();
+    private final ProcessSimulationParameters defaultParameters;
+
+    private ProcessSimulationParameters currentparameters;
 
     @Value("${server.display-name}")
     private String serviceName;
 
-    @Value("${simulate.processing.base:50}")
-    private long defaultSimulateProcessingBase;
+    public DemoController(final ProcessSimulationParameters processSimulationParameters) {
+        defaultParameters = processSimulationParameters;
 
-    @Value("${simulate.processing.random:50}")
-    private int defaultSimulateProcessingRandom;
-    private long simulateProcessingBase;
-    private int simulateProcessingRandom;
+    }
 
     @PostConstruct
     public void setDefaults() {
-        this.simulateProcessingBase = defaultSimulateProcessingBase;
-        this.simulateProcessingRandom = defaultSimulateProcessingRandom;
+        currentparameters = new ProcessSimulationParameters(defaultParameters);
     }
 
-    @RequestMapping(value = "/simulate", method = RequestMethod.POST)
-    public String postSimulate(@RequestParam(value = "base", required = false) Optional<Long> base,
-                               @RequestParam(value = "random", required = false) Optional<Integer> random) {
-        if (base.isPresent()) {
-            simulateProcessingBase = base.get();
-        }
-        if (random.isPresent()) {
-            simulateProcessingRandom = random.get();
-        }
-        if (!base.isPresent() && !random.isPresent()) {
-            setDefaults();
-        }
-        final String message = "Simulation params for " + serviceName + ": base: " + simulateProcessingBase + ", random: " + simulateProcessingRandom;
+    @RequestMapping(value = "/simulation", method = RequestMethod.GET)
+    public ResponseEntity<ProcessSimulationParameters> getSimulation() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        return new ResponseEntity<ProcessSimulationParameters>(currentparameters, httpHeaders, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/simulation/defaults", method = RequestMethod.POST)
+    public ResponseEntity<ProcessSimulationParameters> postReset() {
+        return postSimulate(defaultParameters);
+    }
+
+    @RequestMapping(value = "/simulation", method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> optionsSimulate() {
+        return ResponseEntity.accepted().build();
+
+    }
+
+    @RequestMapping(value = "/simulation", method = RequestMethod.POST)
+    public ResponseEntity<ProcessSimulationParameters> postSimulate(@RequestBody final ProcessSimulationParameters parameters) {
+        currentparameters = new ProcessSimulationParameters(parameters);
+        final String message = "Simulation params for " + serviceName + " " + currentparameters.toString();
         System.err.println(message);
-        return message;
+        return getSimulation();
     }
 
     @RequestMapping("/loadbalancing")
@@ -61,7 +69,8 @@ public class DemoController {
 
     private void simulateHeavyProcessing() {
         try {
-            Thread.sleep(simulateProcessingBase + random.nextInt(simulateProcessingRandom));
+            final long delay = currentparameters.simulationTime();
+            Thread.sleep(delay);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
