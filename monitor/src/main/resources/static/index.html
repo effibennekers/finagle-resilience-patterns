@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Effi and Eggie Monitor</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/main.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/app.js"></script>
+</head>
+<body>
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+    enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div id="main-content" class="container">
+    <div><h2>effi</h2>
+        <span id="effi"></span> TPS: <span id="effiTps"></span>
+    </div>
+    <div><h2>eggie</h2>
+            <span id="eggie"></span> TPS: <span id="eggieTps"></span>
+    </div>
+</div>
+
+<div class="col-md-6">
+    <form class="form-inline">
+        <div class="form-group">
+            <label for="windowSize">Window size</label>
+            <input type="number" id="windowSize" class="form-control">
+        </div>
+        <button id="refreshWindowSize" class="btn btn-default" type="submit">update</button>
+    </form>
+    <form class="form-inline">
+        <button id="reset" class="btn btn-default" type="submit">Reset statistics</button>
+    </form>
+    <form class="form-inline">
+        <label for="numberOfThreads"># threads</label>
+        <input type="number" id="numberOfThreads" class="form-control">
+
+        <label for="callsPerThread"># calls/thread</label>
+        <input type="number" id="callsPerThread" class="form-control">
+        <button id="loadbalancing" class="btn btn-default" type="submit">Start loaddbalancetest</button>
+    </form>
+</div>
+</body>
+</html>
