@@ -13,55 +13,72 @@
 <noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
     enabled. Please enable
     Javascript and reload this page!</h2></noscript>
-<div id="main-content" class="container">
-    <div><h2>effi</h2>
-        <form class="form-inline">
-            <label for="effiSimulationBasetime">base time</label>
-            <input type="number" id="effiSimulationBasetime" class="form-control">
+<div id="main-content" class="container table">
+    <div class="left">
+        <div>
+            <label class="header">effi</label>
+        </div>
+        <div>
+            <form class="form-inline configuration">
 
-            <label for="effiSimulationRandom">random</label>
-            <input type="number" id="effiSimulationRandom" class="form-control">
+                <label for="effiSimulationBasetime">base time</label>
+                <input type="number" id="effiSimulationBasetime">
 
-            <label for="effiSimulationRandomMultiplier">random multiplier</label>
-            <input type="number" id="effiSimulationRandomMultiplier" class="form-control">
-            <button id="effiSettings" class="btn btn-default" type="submit">change settings</button>
-        </form>
+                <label for="effiSimulationRandom">random</label>
+                <input type="number" id="effiSimulationRandom">
+
+                <label for="effiSimulationRandomMultiplier">random multiplier</label>
+                <input type="number" id="effiSimulationRandomMultiplier">
+                <button id="effiSettings" class="btn btn-default" type="submit">change settings</button>
+            </form>
+        </div>
+    </div>
+    <div class="left">
+        <div></div>
+    <div class="metrics">
         <span id="effi"></span> TPS: <span id="effiTps"></span>
     </div>
-    <div><h2>eggie</h2>
-        <form class="form-inline">
-            <label for="eggieSimulationBasetime">base time</label>
-            <input type="number" id="eggieSimulationBasetime" class="form-control">
+    </div>
+    <div class="left">
+        <div>
+            <label class="header">eggie</label>
+        </div>
+        <div>
+            <form class="form-inline configuration">
+                <label for="eggieSimulationBasetime">base time</label>
+                <input type="number" id="eggieSimulationBasetime">
 
-            <label for="eggieSimulationRandom">random</label>
-            <input type="number" id="eggieSimulationRandom" class="form-control">
+                <label for="eggieSimulationRandom">random</label>
+                <input type="number" id="eggieSimulationRandom">
 
-            <label for="eggieSimulationRandomMultiplier">random multiplier</label>
-            <input type="number" id="eggieSimulationRandomMultiplier" class="form-control">
-            <button id="eggieSettings" class="btn btn-default" type="submit">change settings</button>
-        </form>
+                <label for="eggieSimulationRandomMultiplier">random multiplier</label>
+                <input type="number" id="eggieSimulationRandomMultiplier">
+                <button id="eggieSettings" class="btn btn-default" type="submit">change settings</button>
+            </form>
+        </div>
+    </div>
+    <div class="left">
+    <div></div>
+    <div class="metrics">
         <span id="eggie"></span> TPS: <span id="eggieTps"></span>
+    </div>
     </div>
 </div>
 
 <div class="col-md-6">
-    <form class="form-inline">
-        <div class="form-group">
-            <label for="windowSize">Window size</label>
-            <input type="number" id="windowSize" name="windowSize" class="form-control">
-        </div>
+    <form class="configuration">
+        <button id="reset" class="btn btn-default" type="submit">Reset statistics</button>
+        <label for="windowSize">Window size</label>
+        <input type="number" id="windowSize">
         <button id="refreshWindowSize" class="btn btn-default" type="submit">update</button>
     </form>
-    <form class="form-inline">
-        <button id="reset" class="btn btn-default" type="submit">Reset statistics</button>
-    </form>
-    <form class="form-inline">
+    <form class="configuration">
         <label for="numberOfThreads"># threads</label>
-        <input type="number" id="numberOfThreads" class="form-control">
+        <input type="number" id="numberOfThreads">
 
         <label for="callsPerThread"># calls/thread</label>
-        <input type="number" id="callsPerThread" class="form-control">
-        <button id="loadbalancing" class="btn btn-default" type="submit">Start loaddbalancetest</button>
+        <input type="number" id="callsPerThread">
+        <button id="loadbalancing" class="btn btn-default" type="submit">Start loaddbalance test</button>
     </form>
 </div>
 </body>

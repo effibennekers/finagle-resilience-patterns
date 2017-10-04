@@ -12,3 +12,46 @@ body {
     -moz-border-radius: 5px;
     border-radius: 5px;
 }
+
+form.configuration {
+    font-size: x-small;
+}
+
+form.configuration label {
+    font-style: normal;
+    font-weight: normal;
+
+}
+
+form.configuration button {
+    font-size: x-small;
+
+}
+
+form.configuration input {
+    width: 6%;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+div.metrics {
+    font-size: x-large;
+}
+
+div.left {
+    display: table-row;
+}
+
+div.left div {
+    display: table-cell;
+}
+
+.header {
+    font-weight: bold;
+    font-size: large;
+}
+
+
+div.table {
+    display:table;
+}
