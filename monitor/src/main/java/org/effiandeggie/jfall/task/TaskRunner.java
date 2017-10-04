@@ -12,11 +12,15 @@ public class TaskRunner {
 
     public TaskRunner(Supplier<TaskResponse> executor, Consumer<TaskReport> reporter, TaskConfiguration taskConfiguration) {
         for (int i = 0; i < taskConfiguration.getNumberOfThreads(); i++) {
-            tasks.add(new Task(i, taskConfiguration.getNumberOfRuns(), executor, reporter));
+            tasks.add(new Task(executor, reporter));
         }
     }
 
     public void run() {
         tasks.forEach(Thread::start);
+    }
+
+    public void stop() {
+        tasks.forEach(Task::stopRunning);
     }
 }

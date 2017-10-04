@@ -5,28 +5,29 @@ import java.util.function.Supplier;
 
 public class Task extends Thread {
 
-    private final int numberOfRuns;
-    private final int taskId;
     private final Supplier<TaskResponse> executor;
     private final Consumer<TaskReport> statusReporter;
 
+    private boolean doRun;
 
-    public Task(int taskId, int numberOfRuns, Supplier<TaskResponse> executor, Consumer<TaskReport> statusReporter) {
-        this.numberOfRuns = numberOfRuns;
-        this.taskId = taskId;
+
+    public Task(Supplier<TaskResponse> executor, Consumer<TaskReport> statusReporter) {
         this.executor = executor;
         this.statusReporter = statusReporter;
+        doRun = true;
 
     }
 
     @Override
     public void run() {
-        System.err.println("started task # " + taskId);
-        for (int i = 0; i < numberOfRuns; i++) {
+        while (doRun) {
             final long start = System.nanoTime();
             final TaskResponse response = executor.get();
-            statusReporter.accept(new TaskReport(response.getInstance(),  (System.nanoTime() - start)/1000000, response.getHttpStatus()));
+            statusReporter.accept(new TaskReport(response.getInstance(), (System.nanoTime() - start) / 1000000, response.getHttpStatus()));
         }
-        System.err.println("stopped task # " + taskId);
+    }
+
+    public void stopRunning() {
+        doRun = false;
     }
 }

@@ -8,18 +8,21 @@ var eggieTps = 0;
 var effiSimulation = {};
 var eggieSimulation = {};
 
+var taskRunnerId;
+
 function updateEffiSimulation() {
     $('input[id="effiSimulationBasetime"]').val(effiSimulation.baseTime);
     $('input[id="effiSimulationRandom"]').val(effiSimulation.random);
     $('input[id="effiSimulationRandomMultiplier"]').val(effiSimulation.randomMultiplier);
 }
+
 function updateEggieSimulation() {
     $('input[id="eggieSimulationBasetime"]').val(eggieSimulation.baseTime);
     $('input[id="eggieSimulationRandom"]').val(eggieSimulation.random);
     $('input[id="eggieSimulationRandomMultiplier"]').val(eggieSimulation.randomMultiplier);
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     $('input[id="windowSize"]').val(windowSize);
     $.get("http://localhost:8081/simulation", function (data) {
         effiSimulation = data;
@@ -30,6 +33,7 @@ $(document).ready(function() {
         eggieSimulation = data;
         updateEggieSimulation();
     }, "json");
+    $("#stoploadbalancing").prop("disabled", true);
 });
 
 function connect() {
@@ -108,7 +112,13 @@ function refreshDisplay() {
 }
 
 
+
+
+
 function startLoadbalancing() {
+    $("#startloadbalancing").prop("disabled", true);
+    $("#stoploadbalancing").prop("disabled", false);
+
     $.post({
         headers: {
             'Accept': 'application/json',
@@ -116,22 +126,43 @@ function startLoadbalancing() {
         },
         'type': 'POST',
         'url': '/loadbalancing',
-        'data': JSON.stringify({'numberOfRuns': $("#callsPerThread").val(), 'numberOfThreads': $("#numberOfThreads").val()}),
+        'data': JSON.stringify({'numberOfThreads': $("#numberOfThreads").val()}),
         'dataType': 'json'
-    });
+    }, function (data) {
+        taskRunnerId = data;
+        console.log("task runner id: " + taskRunnerId);
 
+    });
 }
+
+function stopLoadbalancing() {
+    $("#startloadbalancing").prop("disabled", false);
+    $("#stoploadbalancing").prop("disabled", true);
+    $.ajax({
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        'type': 'DELETE',
+        'url': '/loadbalancing/' + taskRunnerId
+    });
+}
+console.log('start disabled');
 
 $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    $("#loadbalancing").click(function () {
+    $("#startloadbalancing").click(function () {
+        $(this).attr("disabled", "disabled");
         startLoadbalancing();
+    });
+    $("#stoploadbalancing").click(function () {
+        stopLoadbalancing();
     });
     $("#effiSettings").click(function () {
         $.post({
-            crossOrigin:true,
+            crossOrigin: true,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -152,7 +183,7 @@ $(function () {
     });
     $("#eggieSettings").click(function () {
         $.post({
-            crossOrigin:true,
+            crossOrigin: true,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'

@@ -16,11 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -31,19 +35,32 @@ public class LoadbalanceController {
     final SecureRandom random = new SecureRandom();
     private MessageSendingOperations<String> messagingTemplate;
 
+    private Map<Integer, TaskRunner> runnerTable = new HashMap<>();
+    private int lastRunnerId = 0;
 
     @Autowired
     public LoadbalanceController(final MessageSendingOperations<String> messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
+    @DeleteMapping(value = "/loadbalancing/{id}")
+    public ResponseEntity<?> testLoadbalancingWithApacheHttpClient(@PathVariable ("id") final int id) {
+        final TaskRunner taskRunner = runnerTable.get(id);
+        if (taskRunner != null) {
+            taskRunner.stop();
+            runnerTable.remove(id);
+            return ResponseEntity.accepted().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+
+    }
 
     @PostMapping(value = "/loadbalancing", consumes = "application/json")
-    public ResponseEntity<?> testLoadbalancingWithApacheHttpClient(@RequestBody final TaskConfiguration taskConfiguration) {
-        System.err.println ("task conf. threads" + taskConfiguration.getNumberOfThreads());
-        System.err.println ("task conf. runs" + taskConfiguration.getNumberOfRuns());
+    public ResponseEntity<Integer> testLoadbalancingWithApacheHttpClient(@RequestBody final TaskConfiguration taskConfiguration) {
+        System.err.println("task conf. threads" + taskConfiguration.getNumberOfThreads());
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(200);
+        cm.setMaxTotal(taskConfiguration.getNumberOfThreads());
         cm.setDefaultMaxPerRoute(2);
 
         final HttpHost effieHost = new HttpHost("locahost", EFFIE_PORT);
@@ -74,7 +91,11 @@ public class LoadbalanceController {
         }, report -> {
             messagingTemplate.convertAndSend("/topic/loadbalancing", report);
         }, taskConfiguration);
+        final int id = lastRunnerId++;
+        runnerTable.put(id, taskRunner);
         taskRunner.run();
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok(id);
     }
+
+
 }
