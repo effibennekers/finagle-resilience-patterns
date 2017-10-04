@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class TaskRunner {
+public abstract class TaskRunner {
 
     final List<Task> tasks = new LinkedList<>();
 
-    public TaskRunner(Supplier<TaskResponse> executor, Consumer<TaskReport> reporter, TaskConfiguration taskConfiguration) {
+    protected abstract Supplier<TaskResponse> getExecutor();
+
+    public TaskRunner(Consumer<TaskReport> reporter, TaskConfiguration taskConfiguration) {
+        final Supplier<TaskResponse> executor = getExecutor();
         for (int i = 0; i < taskConfiguration.getNumberOfThreads(); i++) {
             tasks.add(new Task(executor, reporter));
         }
     }
+
 
     public void run() {
         tasks.forEach(Thread::start);

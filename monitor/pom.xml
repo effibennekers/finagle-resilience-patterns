@@ -18,6 +18,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.effieandeggie</groupId>
+            <artifactId>finagle-filter_${scala-compiler.version}</artifactId>
+            <version>0.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.webjars</groupId>
@@ -54,6 +59,16 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>finagle-core_${scala-compiler.version}</artifactId>
+            <version>${finagle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>finagle-http_${scala-compiler.version}</artifactId>
+            <version>${finagle.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -64,6 +79,8 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <finagle.version>7.1.0</finagle.version>
+        <scala-compiler.version>2.12</scala-compiler.version>
     </properties>
 
     <build>

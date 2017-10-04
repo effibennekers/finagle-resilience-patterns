@@ -32,7 +32,8 @@ $(document).ready(function () {
         eggieSimulation = data;
         updateEggieSimulation();
     }, "json");
-    $("#stoploadbalancing").prop("disabled", true);
+    $("#apachestoploadbalancing").prop("disabled", true);
+    $("#finaglestoploadbalancing").prop("disabled", true);
     connect();
     refreshDisplay();
 });
@@ -133,17 +134,18 @@ function refreshDisplay() {
 
 }
 
-function startLoadbalancing() {
-    $("#startloadbalancing").prop("disabled", true);
-    $("#stoploadbalancing").prop("disabled", false);
+function startLoadbalancing(taskrunner) {
+    $("#finaglestartloadbalancing").prop("disabled", true);
+    $("#apachestartloadbalancing").prop("disabled", true);
+    $("#" + taskrunner + "stoploadbalancing").prop("disabled", false);
 
     $.post({
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        'type': 'POST',
-        'url': '/loadbalancing',
+        'type': 'PUT',
+        'url': 'runner/' + taskrunner + '/loadbalancing',
         'data': JSON.stringify({'numberOfThreads': $("#numberOfThreads").val()}),
         'dataType': 'json'
     }, function (data) {
@@ -154,15 +156,17 @@ function startLoadbalancing() {
 }
 
 function stopLoadbalancing() {
-    $("#startloadbalancing").prop("disabled", false);
-    $("#stoploadbalancing").prop("disabled", true);
+    $("#apachestartloadbalancing").prop("disabled", false);
+    $("#finaglestartloadbalancing").prop("disabled", false);
+    $("#apachestoploadbalancing").prop("disabled", true);
+    $("#finaglestoploadbalancing").prop("disabled", true);
     $.ajax({
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         'type': 'DELETE',
-        'url': '/loadbalancing/' + taskRunnerId
+        'url': '/runner/' + taskRunnerId
     });
 }
 
@@ -172,11 +176,16 @@ $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    $("#startloadbalancing").click(function () {
-        $(this).attr("disabled", "disabled");
-        startLoadbalancing();
+    $("#apachestartloadbalancing").click(function () {
+        startLoadbalancing("apache");
     });
-    $("#stoploadbalancing").click(function () {
+    $("#apachestoploadbalancing").click(function () {
+        stopLoadbalancing();
+    });
+    $("#finaglestartloadbalancing").click(function () {
+        startLoadbalancing("finagle");
+    });
+    $("#finaglestoploadbalancing").click(function () {
         stopLoadbalancing();
     });
     $("#effiSettings").click(function () {
