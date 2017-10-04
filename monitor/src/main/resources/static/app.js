@@ -1,6 +1,5 @@
 var stompClient = null;
 
-
 var events = [];
 var windowSize = 10;
 var effiTps = 0;
@@ -34,6 +33,8 @@ $(document).ready(function () {
         updateEggieSimulation();
     }, "json");
     $("#stoploadbalancing").prop("disabled", true);
+    connect();
+    refreshDisplay();
 });
 
 function connect() {
@@ -52,68 +53,85 @@ function connect() {
                     break;
                 default:
                     console.log("ignoring " + JSON.stringify(event));
-
             }
         });
     });
 };
 
-connect();
-refreshDisplay();
-
-
 $(function () {
     setInterval(refreshDisplay, 1000);
 });
 
-
 function refreshDisplay() {
     var eventsToProcess = events.slice(-windowSize);
 
-    var effiCounter = 0;
-    var eggieCounter = 0;
-    var effiTotal = 0;
-    var eggieTotal = 0;
+    var effiCounter = [0,0];
+    var eggieCounter = [0,0];
+    var effiTotal = [0,0];
+    var eggieTotal = [0,0];
 
     $("#effiTps").text(effiTps);
     $("#eggieTps").text(eggieTps);
     effiTps = 0;
     eggieTps = 0;
     eventsToProcess.forEach(function (e) {
+        var index = e.httpStatus == 200?0:1;
+        console.log('index' + index);
         switch (e.instance) {
             case 'effi':
-                effiCounter++;
-                effiTotal += e.duration;
+                effiCounter[index]++;
+                effiTotal[index] += e.duration;
                 break;
 
             case 'eggie':
-                eggieCounter++;
-                eggieTotal += e.duration;
+                eggieCounter[index]++;
+                eggieTotal[index] += e.duration;
                 break;
             default:
                 console.log("unable to process event " + JSON.stringify(e));
         }
-
     });
 
-    if (effiCounter > 0) {
-        $("#effi").text('count: ' + effiCounter + ', average: ' + Math.round(effiTotal / effiCounter));
-    }
-    else {
-        $("#effi").text('count: ' + effiCounter + ', average: -');
+    for (i = 0; i < 2; i++) {
+        if (effiCounter[i] > 0) {
+            $("#effi" + i).text('count: ' + effiCounter[i] + ', average: ' + Math.round(effiTotal[i] / effiCounter[i]));
+        }
+        else {
+            $("#effi" + i).text('count: ' + effiCounter[i] + ', average: -');
+        }
+        var effiCounterTotal = effiCounter[0] + effiCounter[1];
+        if (effiCounterTotal > 0) {
+            $("#effiRatio").text(Math.round((effiCounter[0]*100)/effiCounterTotal));
+        }
+        else {
+            $("#effiRatio").text("-");
+        }
+
+        if (eggieCounter[i] > 0) {
+            $("#eggie" + i).text('count: ' + eggieCounter[i] + ', average: ' + +Math.round(eggieTotal[i] / eggieCounter[i]));
+        }
+        else {
+            $("#eggie" + i).text('count: ' + eggieCounter[i] + ', average: -');
+        }
+        var eggieCounterTotal = eggieCounter[0] + eggieCounter[1];
+        if (eggieCounterTotal > 0) {
+            $("#eggieRatio").text(Math.round((eggieCounter[0]*100)/eggieCounterTotal));
+        }
+        else {
+            $("#eggieRatio").text("-");
+        }
+
+        var overallCounterTotal = effiCounterTotal + eggieCounterTotal;
+        if (overallCounterTotal > 0) {
+            $("#overallRatio").text(Math.round(((effiCounter[0] +eggieCounter[0])*100)/overallCounterTotal));
+
+        }
+        else {
+            $("#overallRatio").text("-");
+        }
     }
 
-    if (eggieCounter > 0) {
-        $("#eggie").text('count: ' + eggieCounter + ', average: ' + +Math.round(eggieTotal / eggieCounter));
-    }
-    else {
-        $("#eggie").text('count: ' + eggieCounter + ', average: -');
-    }
 }
-
-
-
-
 
 function startLoadbalancing() {
     $("#startloadbalancing").prop("disabled", true);
@@ -147,6 +165,7 @@ function stopLoadbalancing() {
         'url': '/loadbalancing/' + taskRunnerId
     });
 }
+
 console.log('start disabled');
 
 $(function () {
