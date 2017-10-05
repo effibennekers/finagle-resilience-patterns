@@ -2,41 +2,113 @@ var stompClient = null;
 
 var events = [];
 var windowSize = 10;
-var effiTps = 0;
-var eggieTps = 0;
-var effiSimulation = {};
-var eggieSimulation = {};
 
 var taskRunnerId;
 
-function updateEffiSimulation() {
-    $('input[id="effiSimulationBasetime"]').val(effiSimulation.baseTime);
-    $('input[id="effiSimulationRandom"]').val(effiSimulation.random);
-    $('input[id="effiSimulationRandomMultiplier"]').val(effiSimulation.randomMultiplier);
-}
+var instances = [
+    {
+        name: 'effi',
+        port: 8081,
+        tps: 0
+    },
+    {
+        name: 'eggie',
+        port: 8082,
+        tps: 0
+    }
+];
 
-function updateEggieSimulation() {
-    $('input[id="eggieSimulationBasetime"]').val(eggieSimulation.baseTime);
-    $('input[id="eggieSimulationRandom"]').val(eggieSimulation.random);
-    $('input[id="eggieSimulationRandomMultiplier"]').val(eggieSimulation.randomMultiplier);
-}
+var instanceTable = {};
+
+instances.forEach(function (instance) {
+    instanceTable[instance.name] = instance;
+});
+
 
 $(document).ready(function () {
     $('input[id="windowSize"]').val(windowSize);
-    $.get("http://localhost:8081/simulation", function (data) {
-        effiSimulation = data;
-        updateEffiSimulation();
-    }, "json");
-
-    $.get("http://localhost:8082/simulation", function (data) {
-        eggieSimulation = data;
-        updateEggieSimulation();
-    }, "json");
     $("#apachestoploadbalancing").prop("disabled", true);
     $("#finaglestoploadbalancing").prop("disabled", true);
+    $("#numberOfThreads").val(10);
+    instances.forEach(function (instance, index) {
+        addInstanceToHtml(instance, index);
+        $.get("http://localhost:" + instance.port + "/simulation", function (data) {
+            updateSimulation(index, data);
+        }, "json");
+    });
+
     connect();
     refreshDisplay();
 });
+
+function updateSimulation(index, data) {
+    console.log('data for sim: ' + JSON.stringify(data));
+    $('input[id="SimulationBasetime_' + index + '"]').val(data.baseTime);
+    $('input[id="SimulationRandom_' + index + '"]').val(data.random);
+    $('input[id="SimulationRandomMultiplier_' + index + '"]').val(data.randomMultiplier);
+}
+
+function addInstanceToHtml(instance, index) {
+    $("#instances-container").append(
+        "<div class='left'>\
+            <div> \
+            <label class='header'>" + instance.name + "</label>\
+        </div> \
+        <div> \
+        <form class='form-inline configuration'> \
+            <label for='SimulationBasetime_" + index + "'>base time</label> \
+            <input type='number' id='SimulationBasetime_" + index + "'> \
+            <label for='SimulationRandom_" + index + "'>random</label> \
+            <input type='number' id='SimulationRandom_" + index + "'> \
+            <label for='SimulationRandomMultiplier_" + index + "'>random multiplier</label> \
+            <input type='number' id='SimulationRandomMultiplier_" + index + "'> \
+            <button id='Settings_" + index + "' class='btn btn-default' type='submit'>change settings</button>\
+        </form>\
+        </div>\
+    </div>\
+    <div class='left'>\
+        <div>TPM</div>\
+        <div id='tps_" + index + "'></div>\
+        </div>\
+        <div class='left'>\
+        <div>Succes/Failure ratio</div>\
+            <div id='Ratio_" + index + "'></div>\
+        </div>\
+        <div class='left'>\
+        <div>ok</div>\
+        <div class='metrics'>\
+        <div id='successMetrics_" + index + "'></div>\
+        </div>\
+        </div>\
+        <div class='left'>\
+        <div>failures</div>\
+        <div class='metrics'>\
+        <div id='failureMetrics_" + index + "'></div>\
+        </div>\
+        </div>");
+
+    $("#Settings_" + index).click(function () {
+        console.log("clicked #" + index);
+        $.post({
+            crossOrigin: true,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'type': 'POST',
+            'url': 'http://localhost:' + instance.port + '/simulation',
+            'data': JSON.stringify({
+                baseTime: $('input[id="SimulationBasetime_' + index + '"]').val(),
+                random: $('input[id="SimulationRandom_' + index + '"]').val(),
+                randomMultiplier: $('input[id="SimulationRandomMultiplier_ ' + index + '"]').val()
+            }),
+            'dataType': 'json'
+
+        }, function (data) {
+            updateSimulation(index, data);
+        });
+    });
+}
 
 function connect() {
     var socket = new SockJS('/gs-guide-websocket');
@@ -45,15 +117,12 @@ function connect() {
         stompClient.subscribe('/topic/loadbalancing', function (response) {
             var event = JSON.parse(response.body);
             events.push(event);
-            switch (event.instance) {
-                case 'effi':
-                    effiTps++;
-                    break;
-                case 'eggie':
-                    eggieTps++;
-                    break;
-                default:
-                    console.log("ignoring " + JSON.stringify(event));
+            var instance = instanceTable[event.instance];
+            if (instance) {
+                instance.tps++;
+            }
+            else {
+                console.log("ignoring " + JSON.stringify(event));
             }
         });
     });
@@ -66,70 +135,72 @@ $(function () {
 function refreshDisplay() {
     var eventsToProcess = events.slice(-windowSize);
 
-    var effiCounter = [0,0];
-    var eggieCounter = [0,0];
-    var effiTotal = [0,0];
-    var eggieTotal = [0,0];
+    var counterTable = {};
 
-    $("#effiTps").text(effiTps);
-    $("#eggieTps").text(eggieTps);
-    effiTps = 0;
-    eggieTps = 0;
+    for (var key in instanceTable) {
+        counterTable[key] = {
+            successDuration: 0,
+            failureDuration: 0,
+            successCounter: 0,
+            failureCounter: 0
+        };
+    }
+
+    instances.forEach(function (instance, index){
+        $("#tps_" + index).text(instance.tps);
+        instance.tps = 0;
+    });
     eventsToProcess.forEach(function (e) {
-        var index = e.httpStatus == 200?0:1;
-        console.log('index' + index);
-        switch (e.instance) {
-            case 'effi':
-                effiCounter[index]++;
-                effiTotal[index] += e.duration;
-                break;
-
-            case 'eggie':
-                eggieCounter[index]++;
-                eggieTotal[index] += e.duration;
-                break;
-            default:
-                console.log("unable to process event " + JSON.stringify(e));
+        var counter = counterTable[e.instance];
+        if (counter) {
+            if (e.httpStatus == 200) {
+                counter.successDuration += e.duration;
+                counter.successCounter++;
+            }
+            else {
+                counter.failureDuration += e.duration;
+                counter.failureCounter++;
+            }
+        }
+        else {
+            console.log("unable to process event " + JSON.stringify(e));
         }
     });
 
-    for (i = 0; i < 2; i++) {
-        if (effiCounter[i] > 0) {
-            $("#effi" + i).text('count: ' + effiCounter[i] + ', average: ' + Math.round(effiTotal[i] / effiCounter[i]));
+
+    var totalCounter = 0;
+    var successCounter = 0
+    instances.forEach(function (instance, index) {
+        var counter = counterTable[instance.name];
+        successCounter += counter.successCounter;
+        if (counter.successCounter > 0) {
+            $("#successMetrics_" + index).text('count: ' + counter.successCounter + ', average: ' + Math.round(counter.successDuration / counter.successCounter));
         }
         else {
-            $("#effi" + i).text('count: ' + effiCounter[i] + ', average: -');
+            $("#successMetrics_" + index).text('count: ' + counter.successCounter + ', average: -');
         }
-        var effiCounterTotal = effiCounter[0] + effiCounter[1];
-        if (effiCounterTotal > 0) {
-            $("#effiRatio").text(Math.round((effiCounter[0]*100)/effiCounterTotal));
+        if (counter.failureCounter > 0) {
+            $("#failureMetrics_" + index).text('count: ' + counter.failureCounter + ', average: ' + Math.round(counter.failureDuration / counter.failureCounter));
         }
         else {
-            $("#effiRatio").text("-");
+            $("#failureMetrics_" + index).text('count: ' + counter.failureCounter + ', average: -');
+        }
+        var total = counter.successCounter + counter.failureCounter;
+        totalCounter += total;
+        if (total > 0) {
+            $("#Ratio_" + index).text(Math.round((counter.successCounter * 10000) / total) / 100);
+        }
+        else {
+            $("#Ratio_" + index).text("-");
         }
 
-        if (eggieCounter[i] > 0) {
-            $("#eggie" + i).text('count: ' + eggieCounter[i] + ', average: ' + +Math.round(eggieTotal[i] / eggieCounter[i]));
-        }
-        else {
-            $("#eggie" + i).text('count: ' + eggieCounter[i] + ', average: -');
-        }
-        var eggieCounterTotal = eggieCounter[0] + eggieCounter[1];
-        if (eggieCounterTotal > 0) {
-            $("#eggieRatio").text(Math.round((eggieCounter[0]*100)/eggieCounterTotal));
-        }
-        else {
-            $("#eggieRatio").text("-");
-        }
+    });
 
-        var overallCounterTotal = effiCounterTotal + eggieCounterTotal;
-        if (overallCounterTotal > 0) {
-            $("#overallRatio").text(Math.round(((effiCounter[0] +eggieCounter[0])*100)/overallCounterTotal));
-
-        }
-        else {
-            $("#overallRatio").text("-");
-        }
+    if (totalCounter > 0) {
+        $("#overallRatio").text(Math.round((successCounter * 10000) / totalCounter) / 100);
+    }
+    else {
+        $("#overallRatio").text("-");
     }
 
 }
@@ -187,48 +258,6 @@ $(function () {
     });
     $("#finaglestoploadbalancing").click(function () {
         stopLoadbalancing();
-    });
-    $("#effiSettings").click(function () {
-        $.post({
-            crossOrigin: true,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            'type': 'POST',
-            'url': 'http://localhost:8081/simulation',
-            'data': JSON.stringify({
-                baseTime: $('input[id="effiSimulationBasetime"]').val(),
-                random: $('input[id="effiSimulationRandom"]').val(),
-                randomMultiplier: $('input[id="effiSimulationRandomMultiplier"]').val(),
-            }),
-            'dataType': 'json'
-
-        }, function (data) {
-            effiSimulation = data;
-            updateEffiSimulation();
-        });
-    });
-    $("#eggieSettings").click(function () {
-        $.post({
-            crossOrigin: true,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            'type': 'POST',
-            'url': 'http://localhost:8082/simulation',
-            'data': JSON.stringify({
-                baseTime: $('input[id="eggieSimulationBasetime"]').val(),
-                random: $('input[id="eggieSimulationRandom"]').val(),
-                randomMultiplier: $('input[id="eggieSimulationRandomMultiplier"]').val(),
-            }),
-            'dataType': 'json'
-
-        }, function (data) {
-            eggieSimulation = data;
-            updateEggieSimulation();
-        });
     });
     $("#reset").click(function () {
         events = [];
