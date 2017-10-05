@@ -5,24 +5,20 @@ var windowSize = 10;
 
 var taskRunnerId;
 
-var instances = [
-    {
-        name: 'effi',
-        port: 8081,
-        tps: 0
-    },
-    {
-        name: 'eggie',
-        port: 8082,
-        tps: 0
-    }
-];
+var instances = [];
+//     {
+//         name: 'effi',
+//         port: 8081,
+//         tps: 0
+//     },
+//     {
+//         name: 'eggie',
+//         port: 8082,
+//         tps: 0
+//     }
+// ];
 
 var instanceTable = {};
-
-instances.forEach(function (instance) {
-    instanceTable[instance.name] = instance;
-});
 
 
 $(document).ready(function () {
@@ -30,19 +26,26 @@ $(document).ready(function () {
     $("#apachestoploadbalancing").prop("disabled", true);
     $("#finaglestoploadbalancing").prop("disabled", true);
     $("#numberOfThreads").val(10);
-    instances.forEach(function (instance, index) {
-        addInstanceToHtml(instance, index);
-        $.get("http://localhost:" + instance.port + "/simulation", function (data) {
-            updateSimulation(index, data);
-        }, "json");
-    });
+
+    $.get("/instances", function (data) {
+        instances = data;
+        instanceTable = {};
+        instances.forEach(function (instance, index) {
+            instanceTable[instance.name] = instance;
+            addInstanceToHtml(instance, index);
+            $.get("http://localhost:" + instance.port + "/simulation", function (data) {
+                updateSimulation(index, data);
+            }, "json");
+        });
+
+    }, "json");
+
 
     connect();
     refreshDisplay();
 });
 
 function updateSimulation(index, data) {
-    console.log('data for sim: ' + JSON.stringify(data));
     $('input[id="SimulationBasetime_' + index + '"]').val(data.baseTime);
     $('input[id="SimulationRandom_' + index + '"]').val(data.random);
     $('input[id="SimulationRandomMultiplier_' + index + '"]').val(data.randomMultiplier);
@@ -62,7 +65,7 @@ function addInstanceToHtml(instance, index) {
             <input type='number' id='SimulationRandom_" + index + "'> \
             <label for='SimulationRandomMultiplier_" + index + "'>random multiplier</label> \
             <input type='number' id='SimulationRandomMultiplier_" + index + "'> \
-            <button id='Settings_" + index + "' class='btn btn-default' type='submit'>change settings</button>\
+            <button id='Settings_" + index + "' class='btn btn-default'>update settings</button> \
         </form>\
         </div>\
     </div>\
@@ -88,7 +91,6 @@ function addInstanceToHtml(instance, index) {
         </div>");
 
     $("#Settings_" + index).click(function () {
-        console.log("clicked #" + index);
         $.post({
             crossOrigin: true,
             headers: {
@@ -100,25 +102,26 @@ function addInstanceToHtml(instance, index) {
             'data': JSON.stringify({
                 baseTime: $('input[id="SimulationBasetime_' + index + '"]').val(),
                 random: $('input[id="SimulationRandom_' + index + '"]').val(),
-                randomMultiplier: $('input[id="SimulationRandomMultiplier_ ' + index + '"]').val()
+                randomMultiplier: $('input[id="SimulationRandomMultiplier_' + index + '"]').val()
             }),
             'dataType': 'json'
 
         }, function (data) {
             updateSimulation(index, data);
         });
+        return false;
     });
 }
 
 function connect() {
     var socket = new SockJS('/gs-guide-websocket');
     stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
+    stompClient.connect({}, function () {
         stompClient.subscribe('/topic/loadbalancing', function (response) {
             var event = JSON.parse(response.body);
-            events.push(event);
             var instance = instanceTable[event.instance];
             if (instance) {
+                events.push(event);
                 instance.tps++;
             }
             else {
@@ -126,7 +129,7 @@ function connect() {
             }
         });
     });
-};
+}
 
 $(function () {
     setInterval(refreshDisplay, 1000);
@@ -146,7 +149,7 @@ function refreshDisplay() {
         };
     }
 
-    instances.forEach(function (instance, index){
+    instances.forEach(function (instance, index) {
         $("#tps_" + index).text(instance.tps);
         instance.tps = 0;
     });
@@ -169,7 +172,7 @@ function refreshDisplay() {
 
 
     var totalCounter = 0;
-    var successCounter = 0
+    var successCounter = 0;
     instances.forEach(function (instance, index) {
         var counter = counterTable[instance.name];
         successCounter += counter.successCounter;
@@ -221,8 +224,6 @@ function startLoadbalancing(taskrunner) {
         'dataType': 'json'
     }, function (data) {
         taskRunnerId = data;
-        console.log("task runner id: " + taskRunnerId);
-
     });
 }
 
@@ -240,8 +241,6 @@ function stopLoadbalancing() {
         'url': '/runner/' + taskRunnerId
     });
 }
-
-console.log('start disabled');
 
 $(function () {
     $("form").on('submit', function (e) {

@@ -16,15 +16,11 @@ class HostFilter(val address: Address) extends SimpleFilter[Request, Response] {
         case _ => Future(Response(Status.InternalServerError))
       })
       .map(resp => {
-        resp.headerMap.add("Host", address match {
-          case x:Inet => x.addr.getPort match  {
-            case 8081 => "effi"
-            case 8082 => "eggie"
-            case port => s"""${port}"""
-          }
-          case _ => "unknown"
-
-        })
+        val (host, port) = address match {
+          case x: Inet => (x.addr.getHostName, x.addr.getPort)
+          case _ => ("Unknown", -1)
+        }
+        resp.headerMap.add("Host", host).add("Port", port.toString)
         resp
       })
   }
