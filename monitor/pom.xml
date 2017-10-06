@@ -23,7 +23,6 @@
             <artifactId>finagle-filter_${scala-compiler.version}</artifactId>
             <version>0.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator</artifactId>
@@ -53,7 +52,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -69,7 +67,6 @@
             <artifactId>finagle-http_${scala-compiler.version}</artifactId>
             <version>${finagle.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
