@@ -6,7 +6,6 @@ import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
 import com.twitter.util.Await;
-import com.twitter.util.Duration;
 import com.twitter.util.Future;
 import org.junit.Test;
 

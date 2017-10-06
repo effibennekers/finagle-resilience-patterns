@@ -6,16 +6,13 @@ import java.security.SecureRandom;
 
 public class ProcessSimulationParameters {
 
+    private final SecureRandom secureRandom = new SecureRandom();
     @Value("${process.simulation.base:50}")
     private long baseTime;
-
     @Value("${process.simulation.random:5}")
     private int random;
-
     @Value("${process.simulation.random.multiplier:10}")
     private int randomMultiplier;
-
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public ProcessSimulationParameters() {
     }
@@ -56,6 +53,6 @@ public class ProcessSimulationParameters {
 
     @Override
     public String toString() {
-        return "base time: " + baseTime + ", random: " + random +", random multiplier: " + randomMultiplier;
+        return "base time: " + baseTime + ", random: " + random + ", random multiplier: " + randomMultiplier;
     }
 }

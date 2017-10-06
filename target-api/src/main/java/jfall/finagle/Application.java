@@ -21,6 +21,10 @@ import java.io.IOException;
 @Configuration
 public class Application {
 
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
     @Bean
     public ProcessSimulationParameters processSimulationParameters() {
         return new ProcessSimulationParameters();
@@ -56,10 +60,5 @@ public class Application {
             public void destroy() {
             }
         });
-    }
-
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
     }
 }
