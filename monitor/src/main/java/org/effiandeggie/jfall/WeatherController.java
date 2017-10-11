@@ -1,25 +1,25 @@
 package org.effiandeggie.jfall;
 
-import com.twitter.finagle.Name;
-import com.twitter.finagle.Resolver$;
 import com.twitter.finagle.Service;
 import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
-import com.twitter.util.Await;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import scala.runtime.AbstractFunction1;
+import scala.runtime.BoxedUnit;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class WeatherController {
 
 
     @GetMapping("/weather")
-    public ResponseEntity<String> getReport() {
+    public CompletableFuture<String> getReport() {
 
         final Service<Request, Response> secondaryClient = HostFilter$.MODULE$.client().
                 withSessionQualifier().noFailFast().
@@ -31,9 +31,9 @@ public class WeatherController {
         final Request request = Request.apply(Method.Get(), "/weather");
         request.host("localhost");
 
-        final Future<Try<Response>> futureResponse = primaryClient.apply(request).liftToTry();
+        final Future<Try<Response>> tryableFutureResponse = primaryClient.apply(request).liftToTry();
 
-        final Future<Response> x = futureResponse.flatMap(tryResponse -> {
+        final Future<Response> futureResponse = tryableFutureResponse.flatMap(tryResponse -> {
             if (tryResponse.isThrow()) {
                 return secondaryClient.apply(request);
             } else {
@@ -43,18 +43,9 @@ public class WeatherController {
                     return Future.value(tryResponse.get());
                 }
             }
-
         });
 
-        try {
-            final Response result = Await.result(x);
-            return ResponseEntity.ok(result.getContentString());
-        } catch (Exception e) {
-            System.err.println("Exception in controller" + e.getMessage());
-            return ResponseEntity.status(500).build();
-        } finally {
-        }
-
+        return FutureUtil.toJavaFuture(futureResponse.map(x -> x.contentString()));
     }
 }
 
