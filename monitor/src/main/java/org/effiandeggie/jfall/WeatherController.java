@@ -9,8 +9,6 @@ import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import scala.runtime.AbstractFunction1;
-import scala.runtime.BoxedUnit;
 
 import java.util.concurrent.CompletableFuture;
 
