@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.effieandeggie</groupId>
+    <groupId>com.ing.example.jfall</groupId>
     <artifactId>monitor</artifactId>
-    <version>0.1.0</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.effieandeggie</groupId>
             <artifactId>finagle-filter_${scala-compiler.version}</artifactId>
-            <version>0.1</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
@@ -46,6 +46,11 @@
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
             <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ing.example.jfall</groupId>
+            <artifactId>data</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

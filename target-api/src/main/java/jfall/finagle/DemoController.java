@@ -24,6 +24,7 @@ public class DemoController {
     @Value("${server.display-name}")
     private String serviceName;
 
+
     public DemoController(final ProcessSimulationParameters processSimulationParameters) {
         defaultParameters = processSimulationParameters;
 

@@ -5,12 +5,13 @@
 
     <groupId>com.ing.example.jfall</groupId>
     <artifactId>jfall-finagle</artifactId>
-    <version>0.1.0</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>source-app</module>
+        <module>data</module>
         <module>target-api</module>
+        <module>monitor</module>
     </modules>
 
     <properties>

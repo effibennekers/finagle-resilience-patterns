@@ -9,11 +9,14 @@ import com.twitter.finagle.loadbalancer.LoadBalancerFactory
 import com.twitter.finagle.Address.Inet
 import com.twitter.util.Future
 
+
 class HostFilter(val address: Address) extends SimpleFilter[Request, Response] {
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     service(request)
       .rescue({
-        case _ => Future(Response(Status.InternalServerError))
+        case _ => {
+          Future(Response(Status.InternalServerError))
+        }
       })
       .map(resp => {
         val (host, port) = address match {
@@ -26,12 +29,16 @@ class HostFilter(val address: Address) extends SimpleFilter[Request, Response] {
   }
 }
 
+
 object HostFilter {
 
   def client(): Http.Client = {
     val stackWithHost = Http.client.stack.insertAfter(LoadBalancerFactory.role, module)
     Http.client.copy(stack = stackWithHost)
   }
+
+
+  val role: Role = Role("Host")
 
   def module: Stackable[ServiceFactory[Request, Response]] =
 
@@ -42,10 +49,9 @@ object HostFilter {
         hostFilter.andThen(next)
       }
 
-
-      val role: Role = Role("Host")
       val description = "Add host header"
 
+      override def role = HostFilter.role
     }
 
 }
