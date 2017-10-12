@@ -17,8 +17,6 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class ApacheLoadbalanceController extends BaseAppacheController {
 
-    private CloseableHttpClient httpClient;
-
     private Instance[] instances;
 
     private SecureRandom random = new SecureRandom();
@@ -34,12 +32,12 @@ public class ApacheLoadbalanceController extends BaseAppacheController {
         final Instance selectedInstance = instances[random.nextInt(instances.length)];
         final HttpGet get = createGetRequest(selectedInstance);
         httpServletResponse.setHeader("instance", selectedInstance.getName());
-        final CompletableFuture<String> response = new CompletableFuture<>();
-        try (CloseableHttpResponse response1 = httpClient.execute(get)) {
-            response.complete(IOUtils.toString(response1.getEntity().getContent(), "UTF-8"));
+        final CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        try (CloseableHttpResponse response = httpClient.execute(get)) {
+            futureResponse.complete(IOUtils.toString(response.getEntity().getContent(), "UTF-8"));
         } catch (IOException e) {
-            response.completeExceptionally(e);
+            futureResponse.completeExceptionally(e);
         }
-        return response;
+        return futureResponse;
     }
 }
