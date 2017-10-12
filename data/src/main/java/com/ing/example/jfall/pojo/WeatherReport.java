@@ -59,10 +59,9 @@ public class WeatherReport {
     }
 
     private Condition condition;
-    private int temperature;
-    private int windForce;
+    private Integer temperature;
+    private Integer windForce;
     private WindDirection windDirection;
-    private Integer accuracy;
 
 
 }

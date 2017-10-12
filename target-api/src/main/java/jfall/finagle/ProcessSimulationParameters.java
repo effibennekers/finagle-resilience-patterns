@@ -1,26 +1,38 @@
 package jfall.finagle;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.security.SecureRandom;
 
+@Component
 public class ProcessSimulationParameters {
 
     private final SecureRandom secureRandom = new SecureRandom();
     @Value("${process.simulation.base:50}")
-    private long baseTime;
+    private long defaultBaseTime;
     @Value("${process.simulation.random:5}")
-    private int random;
+    private int defaultRandom;
     @Value("${process.simulation.random.multiplier:10}")
+    private int defaultRandomMultiplier;
+
+    private long baseTime;
+    private int random;
     private int randomMultiplier;
 
-    public ProcessSimulationParameters() {
+
+    public void update(final ProcessSimulationParameters parameters) {
+        this.baseTime = parameters.getBaseTime();
+        this.random = parameters.getRandom();
+        this.randomMultiplier = parameters.getRandomMultiplier();
     }
 
-    public ProcessSimulationParameters(final ProcessSimulationParameters source) {
-        this.baseTime = source.getBaseTime();
-        this.random = source.getRandom();
-        this.randomMultiplier = source.getRandomMultiplier();
+    @PostConstruct
+    public void setToDefault() {
+        this.baseTime = defaultBaseTime;
+        this.random = defaultRandom;
+        this.randomMultiplier = defaultRandomMultiplier;
     }
 
     public long getBaseTime() {

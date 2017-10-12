@@ -1,31 +1,15 @@
-var stompClient = null;
-
 var events = [];
 var windowSize = 10;
 
-var taskRunnerId;
 
 var instances = [];
-//     {
-//         name: 'effi',
-//         port: 8081,
-//         tps: 0
-//     },
-//     {
-//         name: 'eggie',
-//         port: 8082,
-//         tps: 0
-//     }
-// ];
-
 var instanceTable = {};
 
 
 $(document).ready(function () {
     $('input[id="windowSize"]').val(windowSize);
-    $("#apachestoploadbalancing").prop("disabled", true);
-    $("#finaglestoploadbalancing").prop("disabled", true);
-    $("#numberOfThreads").val(10);
+    $("#stopTest").prop("disabled", true);
+    $("#targetTps").val(10);
 
     $.get("/instances", function (data) {
         instances = data;
@@ -33,15 +17,11 @@ $(document).ready(function () {
         instances.forEach(function (instance, index) {
             instanceTable[instance.name] = instance;
             addInstanceToHtml(instance, index);
-            $.get("http://localhost:" + instance.port + "/simulation", function (data) {
+            $.get("http://" + instance.host + ":" + instance.port + "/simulation", function (data) {
                 updateSimulation(index, data);
             }, "json");
         });
-
     }, "json");
-
-
-    connect();
     refreshDisplay();
 });
 
@@ -70,7 +50,7 @@ function addInstanceToHtml(instance, index) {
         </div>\
     </div>\
     <div class='left'>\
-        <div>TPM</div>\
+        <div>TPS</div>\
         <div id='tps_" + index + "'></div>\
         </div>\
         <div class='left'>\
@@ -98,14 +78,13 @@ function addInstanceToHtml(instance, index) {
                 'Content-Type': 'application/json'
             },
             'type': 'POST',
-            'url': 'http://localhost:' + instance.port + '/simulation',
+            'url': 'http://' + instance.host + ':' + instance.port + '/simulation',
             'data': JSON.stringify({
                 baseTime: $('input[id="SimulationBasetime_' + index + '"]').val(),
                 random: $('input[id="SimulationRandom_' + index + '"]').val(),
                 randomMultiplier: $('input[id="SimulationRandomMultiplier_' + index + '"]').val()
             }),
             'dataType': 'json'
-
         }, function (data) {
             updateSimulation(index, data);
         });
@@ -113,27 +92,60 @@ function addInstanceToHtml(instance, index) {
     });
 }
 
-function connect() {
-    var socket = new SockJS('/gs-guide-websocket');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, function () {
-        stompClient.subscribe('/topic/loadbalancing', function (response) {
-            var event = JSON.parse(response.body);
-            var instance = instanceTable[event.instance];
-            if (instance) {
-                events.push(event);
-                instance.tps++;
-            }
-            else {
-                console.log("ignoring " + JSON.stringify(event));
-            }
-        });
-    });
+function registerEvent(event) {
+    var instance = instanceTable[event.instance];
+    if (instance) {
+        events.push(event);
+        instance.tps++;
+    }
+    else {
+        console.log("ignoring " + JSON.stringify(event));
+    }
+
 }
 
 $(function () {
     setInterval(refreshDisplay, 1000);
 });
+
+var testIntervalId;
+
+function startTest(path) {
+    $("#stopTest").prop("disabled", false);
+    $('.start-test').each(function () {
+        $(this).prop("disabled", true)
+
+    });
+    var tps = $("#targetTps").val();
+    testIntervalId = setInterval(function () {
+        var start;
+        $.ajax({
+            beforeSend: function () {
+                start = new Date().getTime();
+            },
+            url: path,
+            complete: function (x) {
+                var end = new Date().getTime();
+                var duration = end - start;
+                var event = {
+                    instance: x.getResponseHeader("instance"),
+                    httpStatus: x.status,
+                    duration: duration
+                };
+                registerEvent(event);
+            }
+        });
+    }, 1000 / tps);
+}
+
+function stopTest() {
+    clearInterval(testIntervalId);
+    $('.start-test').each(function () {
+        $(this).prop("disabled", false)
+    });
+    $("#stopTest").prop("disabled", true);
+}
+
 
 function refreshDisplay() {
     var eventsToProcess = events.slice(-windowSize);
@@ -208,55 +220,22 @@ function refreshDisplay() {
 
 }
 
-function startLoadbalancing(taskrunner) {
-    $("#finaglestartloadbalancing").prop("disabled", true);
-    $("#apachestartloadbalancing").prop("disabled", true);
-    $("#" + taskrunner + "stoploadbalancing").prop("disabled", false);
-
-    $.post({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        'type': 'PUT',
-        'url': 'runner/' + taskrunner + '/loadbalancing',
-        'data': JSON.stringify({'numberOfThreads': $("#numberOfThreads").val()}),
-        'dataType': 'json'
-    }, function (data) {
-        taskRunnerId = data;
-    });
-}
-
-function stopLoadbalancing() {
-    $("#apachestartloadbalancing").prop("disabled", false);
-    $("#finaglestartloadbalancing").prop("disabled", false);
-    $("#apachestoploadbalancing").prop("disabled", true);
-    $("#finaglestoploadbalancing").prop("disabled", true);
-    $.ajax({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        'type': 'DELETE',
-        'url': '/runner/' + taskRunnerId
-    });
-}
 
 $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
     $("#apachestartloadbalancing").click(function () {
-        startLoadbalancing("apache");
+        startTest("/api/apache/loadbalancing");
     });
-    $("#apachestoploadbalancing").click(function () {
-        stopLoadbalancing();
+    $("#stopTest").click(function () {
+        stopTest();
     });
     $("#finaglestartloadbalancing").click(function () {
-        startLoadbalancing("finagle");
+        startTest("/api/finagle/loadbalancing");
     });
-    $("#finaglestoploadbalancing").click(function () {
-        stopLoadbalancing();
+    $("#finaglestartfailover").click(function () {
+        startTest("/api/finagle/failover");
     });
     $("#reset").click(function () {
         events = [];

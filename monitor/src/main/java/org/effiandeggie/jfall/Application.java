@@ -1,5 +1,6 @@
 package org.effiandeggie.jfall;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -14,13 +15,27 @@ public class Application {
     }
 
 
-    @Bean
-    public Instance[]instances() {
-        return new Instance[] {
-                new Instance("effi", 8081),
-                new Instance("eggie", 8082),
-                new Instance("joost", 8083)
-        };
+    @Bean(name = "primaryInstance")
+    public Instance primaryInstance() {
+        return new Instance("effi", "localhost", 8081);
+    }
 
+    @Bean(name = "secondaryInstance")
+    public Instance secondaryInstance() {
+        return new Instance("henk", "localhost", 8083);
+    }
+
+    @Bean
+    public Instance[] instances(final Instance primaryInstance, final Instance secondaryInstance) {
+        return new Instance[]{
+                primaryInstance,
+                new Instance("eggie", "localhost", 8082),
+                secondaryInstance
+        };
+    }
+
+    @Bean
+    public InstanceManager instanceManager(@Qualifier("instances") final Instance[] instances) {
+        return new InstanceManager(instances);
     }
 }
