@@ -124,6 +124,21 @@ function startTest(path) {
                 start = new Date().getTime();
             },
             url: path,
+            success: function(data) {
+                console.log(data);
+                var weather = JSON.parse(data);
+                if (!weather.windForce) {
+                    weather.windForce = "";
+                }
+                if (!weather.windDirection) {
+                    weather.windDirection = "";
+                }
+                $("#temperature").text(weather.temperature);
+                $("#condition").text(weather.condition);
+                $("#windforce").text(weather.windForce);
+                $("#winddirection").text(weather.windDirection);
+
+            },
             complete: function (x) {
                 var end = new Date().getTime();
                 var duration = end - start;
@@ -133,6 +148,7 @@ function startTest(path) {
                     duration: duration
                 };
                 registerEvent(event);
+
             }
         });
     }, 1000 / tps);

@@ -19,9 +19,30 @@
             <div>overall success ratio</div>
             <div class="metrics" id="overallRatio"></div>
         </div>
+    </div>
+    <div>
+        <div class="left">
+            <div>temperature</div>
+            <div id="temperature"></div>
+        </div>
+        <div class="left">
+            <div>condition</div>
+            <div id="condition"></div>
+        </div>
+        <div class="left">
+            <div>wind direction</div>
+            <div id="winddirection"></div>
+        </div>
+        <div class="left">
+            <div>wind force</div>
+            <div id="windforce"></div>
+        </div>
+
+    </div>
 
     </div>
 </div>
+
 
 <div class="col-md-6">
     <form class="configuration">
@@ -40,7 +61,8 @@
         <button id="apachestartloadbalancing" class="btn btn-default start-test" type="submit">Start apache loaddbalance test</button>
     </div>
     <div>
-        <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle loaddbalance test</button>
+        <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle loaddbalance test
+        </button>
     </div>
     <div>
         <button id="finaglestartfailover" class="btn btn-default start-test" type="submit">Start finagle failover test</button>
