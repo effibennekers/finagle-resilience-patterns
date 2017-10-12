@@ -237,6 +237,9 @@ $(function () {
     $("#finaglestartfailover").click(function () {
         startTest("/api/finagle/failover");
     });
+    $("#apachestartfailover").click(function () {
+        startTest("/api/apache/failover");
+    });
     $("#reset").click(function () {
         events = [];
         refreshDisplay();
