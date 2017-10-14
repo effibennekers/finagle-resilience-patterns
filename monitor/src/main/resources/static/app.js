@@ -27,6 +27,7 @@ function updateSimulation(index, data) {
     $('input[id="SimulationBasetime_' + index + '"]').val(data.baseTime);
     $('input[id="SimulationRandom_' + index + '"]').val(data.random);
     $('input[id="SimulationRandomMultiplier_' + index + '"]').val(data.randomMultiplier);
+    $('input[id="FailureRate_' + index + '"]').val(data.failureRate);
 }
 
 function addInstanceToHtml(instance, index) {
@@ -67,6 +68,14 @@ function addInstanceToHtml(instance, index) {
                   <input type='number' id='SimulationRandomMultiplier_" + index + "'> \
                 </div> \
               </div> \
+              <div class='left'> \
+                <div> \
+                  <label for='FailureRate_" + index + "'>failure rate</label> \
+                </div> \
+                <div> \
+                  <input type='number' id='FailureRate_" + index + "'> \
+                </div> \
+              </div> \
             </div> \
               <div class='left'> \
                 <div> \
@@ -105,7 +114,8 @@ function addInstanceToHtml(instance, index) {
             'data': JSON.stringify({
                 baseTime: $('input[id="SimulationBasetime_' + index + '"]').val(),
                 random: $('input[id="SimulationRandom_' + index + '"]').val(),
-                randomMultiplier: $('input[id="SimulationRandomMultiplier_' + index + '"]').val()
+                randomMultiplier: $('input[id="SimulationRandomMultiplier_' + index + '"]').val(),
+                failureRate: $('input[id="FailureRate_' + index + '"]').val()
             }),
             'dataType': 'json'
         }, function (data) {

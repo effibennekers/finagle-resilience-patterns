@@ -9,6 +9,7 @@ import com.twitter.finagle.http.Response;
 import com.twitter.util.Future;
 import org.effiandeggie.finagle.filters.HostFilter$;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,13 +36,18 @@ public class FinagleLoadbalanceController {
     }
 
     @GetMapping(value = "/api/finagle/loadbalancing")
-    public CompletableFuture<String> loadbalance(final HttpServletResponse httpServletResponse) {
+    public CompletableFuture<ResponseEntity<String>> loadbalance(final HttpServletResponse httpServletResponse) {
         final Request request = Request.apply(Method.Get(), "/weather");
         request.host("localhost");
-        final Future<String> futureResponse = client.apply(request).map(response -> {
+        final Future<ResponseEntity<String>> futureResponse = client.apply(request).map(response -> {
             final String instanceName = instanceManager.lookup(response).map(Instance::getName).orElse("unknown");
             httpServletResponse.setHeader("instance", instanceName);
-            return response.contentString();
+            if (response.getStatusCode() == 200) {
+                return ResponseEntity.ok(response.contentString());
+            }
+            else {
+                return ResponseEntity.status(response.getStatusCode()).build();
+            }
         });
         return FutureUtil.toJavaFuture(futureResponse);
     }

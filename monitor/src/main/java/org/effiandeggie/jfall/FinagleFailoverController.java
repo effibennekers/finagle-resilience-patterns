@@ -1,7 +1,6 @@
 package org.effiandeggie.jfall;
 
 import com.twitter.finagle.Service;
-import com.twitter.finagle.http.Message;
 import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
@@ -10,6 +9,7 @@ import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,7 +45,7 @@ public class FinagleFailoverController {
     }
 
     @GetMapping("/api/finagle/failover")
-    public CompletableFuture<String> getReport(final HttpServletResponse httpServletResponse) {
+    public CompletableFuture<ResponseEntity<String>> getFailover(final HttpServletResponse httpServletResponse) {
         final Request primaryRequest = Request.apply(Method.Get(), "/weather");
         primaryRequest.host("localhost");
         final Future<Try<Response>> tryableFutureResponse = primaryClient.apply(primaryRequest).liftToTry();
@@ -61,7 +61,14 @@ public class FinagleFailoverController {
             }
         });
 
-        return FutureUtil.toJavaFuture(futureResponse.map(Message::contentString));
+        return FutureUtil.toJavaFuture(futureResponse.map(
+                response -> {
+                    if (response.getStatusCode() == 200) {
+                        return ResponseEntity.ok(response.getContentString());
+                    } else {
+                        return ResponseEntity.status(response.getStatusCode()).build();
+                    }
+                }));
     }
 
     private boolean isValidRequest(final Try<Response> tryResponse) {

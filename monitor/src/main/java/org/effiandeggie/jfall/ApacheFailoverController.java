@@ -5,14 +5,13 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-
-import static java.lang.String.format;
 
 @RestController
 public class ApacheFailoverController extends BaseAppacheController {
@@ -29,14 +28,15 @@ public class ApacheFailoverController extends BaseAppacheController {
     }
 
     @GetMapping(value = "/api/apache/failover")
-    public CompletableFuture<String> failover(final HttpServletResponse httpServletResponse) {
+    public CompletableFuture<ResponseEntity<String>> failover(final HttpServletResponse httpServletResponse) {
         final HttpGet get = createGetRequest(primaryInstance);
-        final CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        final CompletableFuture<ResponseEntity<String>> futureResponse = new CompletableFuture<>();
 
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             if (response.getStatusLine().getStatusCode() == 200) {
                 httpServletResponse.setHeader("instance", primaryInstance.getName());
-                futureResponse.complete(IOUtils.toString(response.getEntity().getContent(), "UTF-8"));
+                final String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                futureResponse.complete(ResponseEntity.ok(data));
             } else {
                 failover(futureResponse, httpServletResponse);
             }
@@ -46,13 +46,19 @@ public class ApacheFailoverController extends BaseAppacheController {
         return futureResponse;
     }
 
-    private void failover(final CompletableFuture<String> futureResponse, final HttpServletResponse httpServletResponse) {
+    private void failover(final CompletableFuture<ResponseEntity<String>> futureResponse, final HttpServletResponse httpServletResponse) {
         httpServletResponse.setHeader("instance", secondaryInstance.getName());
         final HttpGet get = createGetRequest(secondaryInstance);
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            futureResponse.complete(IOUtils.toString(response.getEntity().getContent(), "UTF-8"));
+            final int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == 200) {
+                final String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                futureResponse.complete(ResponseEntity.ok(data));
+            } else {
+                futureResponse.complete(ResponseEntity.status(statusCode).build());
+            }
         } catch (IOException e) {
-            futureResponse.completeExceptionally(e);
+            futureResponse.complete(ResponseEntity.status(500).build());
         }
     }
 }

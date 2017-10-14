@@ -37,7 +37,7 @@ public class SimulationController {
     }
 
     @RequestMapping(value = "/simulation", method = RequestMethod.POST)
-    public ResponseEntity<ProcessSimulationParameters> postSimulate(@RequestBody final ProcessSimulationParameters parameters) {
+    public ResponseEntity<ProcessSimulationParameters> postSimulationParameters(@RequestBody final ProcessSimulationParameters parameters) {
         processSimulationParameters.update(parameters);
         return getSimulation();
     }

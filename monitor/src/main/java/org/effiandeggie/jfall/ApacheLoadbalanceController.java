@@ -3,9 +3,9 @@ package org.effiandeggie.jfall;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,15 +28,21 @@ public class ApacheLoadbalanceController extends BaseAppacheController {
     }
 
     @GetMapping(value = "/api/apache/loadbalancing")
-    public CompletableFuture<String> loadbalance(final HttpServletResponse httpServletResponse) {
+    public CompletableFuture<ResponseEntity<String>> loadbalance(final HttpServletResponse httpServletResponse) {
         final Instance selectedInstance = instances[random.nextInt(instances.length)];
         final HttpGet get = createGetRequest(selectedInstance);
         httpServletResponse.setHeader("instance", selectedInstance.getName());
-        final CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        final CompletableFuture<ResponseEntity<String>> futureResponse = new CompletableFuture<>();
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            futureResponse.complete(IOUtils.toString(response.getEntity().getContent(), "UTF-8"));
+            final int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == 200) {
+                final String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                futureResponse.complete(ResponseEntity.ok(data));
+            } else {
+                futureResponse.complete(ResponseEntity.status(statusCode).build());
+            }
         } catch (IOException e) {
-            futureResponse.completeExceptionally(e);
+            futureResponse.complete(ResponseEntity.status(500).build());
         }
         return futureResponse;
     }

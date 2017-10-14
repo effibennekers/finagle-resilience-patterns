@@ -25,15 +25,22 @@ public class WeatherController {
 
     @GetMapping("/weather")
     public ResponseEntity<WeatherReport> getReport() {
-        final WeatherReport report = new WeatherReport();
-        report.setCondition(randomEnum(WeatherReport.Condition.class));
-        report.setTemperature(-20 + random.nextInt(51));
-        if (!fallbackMode) {
-            report.setWindForce(random.nextInt(11));
-            report.setWindDirection(randomEnum(WeatherReport.WindDirection.class));
-        }
         simulateHeavyProcessing();
-        return ResponseEntity.ok(report);
+
+        if (processSimulationParameters.simulateFaiure()) {
+            return ResponseEntity.notFound().build();
+
+        }
+        else {
+            final WeatherReport report = new WeatherReport();
+            report.setCondition(randomEnum(WeatherReport.Condition.class));
+            report.setTemperature(-20 + random.nextInt(51));
+            if (!fallbackMode) {
+                report.setWindForce(random.nextInt(11));
+                report.setWindDirection(randomEnum(WeatherReport.WindDirection.class));
+            }
+            return ResponseEntity.ok(report);
+        }
     }
 
 
