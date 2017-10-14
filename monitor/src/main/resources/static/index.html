@@ -2,11 +2,9 @@
 <html>
 <head>
     <title>Effi and Eggie Monitor</title>
-    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/main.css" rel="stylesheet">
     <script src="/webjars/jquery/jquery.min.js"></script>
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/webjars/jquery-ui/jquery-ui.js"></script>
     <script src="/app.js"></script>
 </head>
 <body>
@@ -19,6 +17,28 @@
             <div>overall success ratio</div>
             <div class="metrics" id="overallRatio"></div>
         </div>
+    </div>
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <td rowspan="2"></td>
+                <td rowspan="2">TPS</td>
+                <td rowspan="2">Success %</td>
+                <td colspan="2">Ok</td>
+                <td colspan="2">Failure</td>
+            </tr>
+            <tr>
+                <td>count</td>
+                <td>average</td>
+                <td>count</td>
+                <td>average</td>
+            </tr>
+            </thead>
+            <tbody id="instance-table">
+            </tbody>
+        </table>
+
     </div>
     <div>
         <div class="left">
@@ -37,9 +57,6 @@
             <div>wind force</div>
             <div id="windforce"></div>
         </div>
-
-    </div>
-
     </div>
 </div>
 
@@ -58,17 +75,16 @@
 
     </form>
     <div>
-        <button id="apachestartloadbalancing" class="btn btn-default start-test" type="submit">Start apache loaddbalance test</button>
-    </div>
-    <div>
-        <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle loaddbalance test
+        <button id="apachestartloadbalancing" class="btn btn-default start-test" type="submit">Start apache loaddbalance
+            test
         </button>
-    </div>
-    <div>
-        <button id="finaglestartfailover" class="btn btn-default start-test" type="submit">Start finagle failover test</button>
-    </div>
-    <div>
-        <button id="apachestartfailover" class="btn btn-default start-test" type="submit">Start apache failover test</button>
+        <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle
+            loaddbalance test
+        </button>
+        <button id="finaglestartfailover" class="btn btn-default start-test" type="submit">Start finagle failover test
+        </button>
+        <button id="apachestartfailover" class="btn btn-default start-test" type="submit">Start apache failover test
+        </button>
     </div>
 </div>
 </body>

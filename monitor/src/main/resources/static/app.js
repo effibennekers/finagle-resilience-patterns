@@ -2,6 +2,7 @@ var events = [];
 var windowSize = 10;
 
 
+var genericFailureCount = 0;
 var instances = [];
 var instanceTable = {};
 
@@ -17,9 +18,6 @@ $(document).ready(function () {
         instances.forEach(function (instance, index) {
             instanceTable[instance.name] = instance;
             addInstanceToHtml(instance, index);
-            $.get("http://" + instance.host + ":" + instance.port + "/simulation", function (data) {
-                updateSimulation(index, data);
-            }, "json");
         });
     }, "json");
     refreshDisplay();
@@ -32,44 +30,69 @@ function updateSimulation(index, data) {
 }
 
 function addInstanceToHtml(instance, index) {
+    $("#instance-table").append(
+        "<tr><th id='dialogOpener_" + index + "'>" + instance.name + "</th><td id='tps_" + index + "'></td>\
+        <td id='Ratio_" + index + "'></td>\
+        <td id='successCount_" + index + "'></td>\
+        <td id='successAverage_" + index + "'></td>\
+        <td id='failureCount_" + index + "'></td>\
+        <td id='failureAverage_" + index + "'></td>\
+        </tr>"
+    );
     $("#instances-container").append(
-        "<div class='left'>\
-            <div> \
-            <label class='header'>" + instance.name + "</label>\
-        </div> \
-        <div> \
-        <form class='form-inline configuration'> \
-            <label for='SimulationBasetime_" + index + "'>base time</label> \
-            <input type='number' id='SimulationBasetime_" + index + "'> \
-            <label for='SimulationRandom_" + index + "'>random</label> \
-            <input type='number' id='SimulationRandom_" + index + "'> \
-            <label for='SimulationRandomMultiplier_" + index + "'>random multiplier</label> \
-            <input type='number' id='SimulationRandomMultiplier_" + index + "'> \
-            <button id='Settings_" + index + "' class='btn btn-default'>update settings</button> \
-        </form>\
+        "<div id='dialog_" + index + "' class='instanceSettings' title='Settings for " + instance.name + "'>\
+           <h1>delay simulation</h1> \
+            <div class='table'> \
+              <div class='left'> \
+                <div>\
+                 <label for='SimulationBasetime_" + index + "'>base time</label> \
+                </div> \
+                <div>\
+                 <input type='number' id='SimulationBasetime_" + index + "'> \
+                </div> \
+              </div> \
+              <div class='left'> \
+                <div> \
+                 <label for='SimulationRandom_" + index + "'>random</label> \
+                </div>\
+                <div> \
+                  <input type='number' id='SimulationRandom_" + index + "'> \
+                </div>\
+              </div> \
+              <div class='left'> \
+                <div> \
+                  <label for='SimulationRandomMultiplier_" + index + "'>random multiplier</label> \
+                </div> \
+                <div> \
+                  <input type='number' id='SimulationRandomMultiplier_" + index + "'> \
+                </div> \
+              </div> \
+            </div> \
+              <div class='left'> \
+                <div> \
+            <button id='dialogCloser_" + index + "' class='btn btn-default'>close</button> \
+                </div>\
+                <div> \
+            <button id='Settings_" + index + "' class='btn btn-default'>update</button> \
+                </div> \
         </div>\
-    </div>\
-    <div class='left'>\
-        <div>TPS</div>\
-        <div id='tps_" + index + "'></div>\
-        </div>\
-        <div class='left'>\
-        <div>Succes/Failure ratio</div>\
-            <div id='Ratio_" + index + "'></div>\
-        </div>\
-        <div class='left'>\
-        <div>ok</div>\
-        <div class='metrics'>\
-        <div id='successMetrics_" + index + "'></div>\
-        </div>\
-        </div>\
-        <div class='left'>\
-        <div>failures</div>\
-        <div class='metrics'>\
-        <div id='failureMetrics_" + index + "'></div>\
-        </div>\
-        </div>");
+    </div>");
 
+    $("#dialog_" + index).dialog({
+        autoOpen: false,
+        open: function () {
+            $.get("http://" + instance.host + ":" + instance.port + "/simulation", function (data) {
+                updateSimulation(index, data);
+            }, "json");
+
+        }
+    });
+    $("#dialogOpener_" + index).click(function () {
+        $("#dialog_" + index).dialog("open");
+    });
+    $("#dialogCloser_" + index).click(function () {
+        $("#dialog_" + index).dialog("close");
+    });
     $("#Settings_" + index).click(function () {
         $.post({
             crossOrigin: true,
@@ -98,10 +121,6 @@ function registerEvent(event) {
         events.push(event);
         instance.tps++;
     }
-    else {
-        console.log("ignoring " + JSON.stringify(event));
-    }
-
 }
 
 $(function () {
@@ -124,8 +143,7 @@ function startTest(path) {
                 start = new Date().getTime();
             },
             url: path,
-            success: function(data) {
-                console.log(data);
+            success: function (data) {
                 var weather = JSON.parse(data);
                 if (!weather.windForce) {
                     weather.windForce = "";
@@ -138,6 +156,9 @@ function startTest(path) {
                 $("#windforce").text(weather.windForce);
                 $("#winddirection").text(weather.windDirection);
 
+            },
+            error: function () {
+                genericFailureCount++;
             },
             complete: function (x) {
                 var end = new Date().getTime();
@@ -199,22 +220,25 @@ function refreshDisplay() {
     });
 
 
-    var totalCounter = 0;
+    var totalCounter = genericFailureCount;
+    genericFailureCount = 0;
     var successCounter = 0;
     instances.forEach(function (instance, index) {
         var counter = counterTable[instance.name];
         successCounter += counter.successCounter;
+        $("#successCount_" + index).text(counter.successCounter);
         if (counter.successCounter > 0) {
-            $("#successMetrics_" + index).text('count: ' + counter.successCounter + ', average: ' + Math.round(counter.successDuration / counter.successCounter));
+            $("#successAverage_" + index).text(Math.round(counter.successDuration / counter.successCounter));
         }
         else {
-            $("#successMetrics_" + index).text('count: ' + counter.successCounter + ', average: -');
+            $("#successAverage_" + index).text('-');
         }
+        $("#failureCount_" + index).text(counter.failureCounter);
         if (counter.failureCounter > 0) {
-            $("#failureMetrics_" + index).text('count: ' + counter.failureCounter + ', average: ' + Math.round(counter.failureDuration / counter.failureCounter));
+            $("#failureAverage_" + index).text(Math.round(counter.failureDuration / counter.failureCounter));
         }
         else {
-            $("#failureMetrics_" + index).text('count: ' + counter.failureCounter + ', average: -');
+            $("#failureAverage_" + index).text('-');
         }
         var total = counter.successCounter + counter.failureCounter;
         totalCounter += total;
@@ -238,6 +262,7 @@ function refreshDisplay() {
 
 
 $(function () {
+
     $("form").on('submit', function (e) {
         e.preventDefault();
     });

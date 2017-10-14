@@ -2,6 +2,21 @@ body {
     background-color: #f5f5f5;
 }
 
+.ui-dialog {
+    background-color: #ffcf51;
+}
+
+.ui-dialog-titlebar {
+    font-size: larger;
+    font-weight: bold;
+}
+
+
+
+.ui-dialog-titlebar-close{
+    display: none;
+}
+
 #main-content {
     max-width: 940px;
     padding: 2em 3em;
@@ -20,7 +35,11 @@ form.configuration {
 form.configuration label {
     font-style: normal;
     font-weight: normal;
+}
 
+.ui-dialog {
+    position: absolute;
+    overflow: hidden;
 }
 
 form.configuration button {
