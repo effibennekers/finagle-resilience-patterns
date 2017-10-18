@@ -28,7 +28,7 @@ public class ApacheLoadbalanceController extends BaseAppacheController {
     }
 
     @GetMapping(value = "/api/apache/loadbalancing")
-    public CompletableFuture<ResponseEntity<String>> loadbalance(final HttpServletResponse httpServletResponse) {
+    public ResponseEntity<String> loadbalance(final HttpServletResponse httpServletResponse) {
         final Instance selectedInstance = instances[random.nextInt(instances.length)];
         final HttpGet get = createGetRequest(selectedInstance);
         httpServletResponse.setHeader("instance", selectedInstance.getName());
@@ -37,13 +37,12 @@ public class ApacheLoadbalanceController extends BaseAppacheController {
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {
                 final String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-                futureResponse.complete(ResponseEntity.ok(data));
+                return ResponseEntity.ok(data);
             } else {
-                futureResponse.complete(ResponseEntity.status(statusCode).build());
+                return ResponseEntity.status(statusCode).build();
             }
         } catch (IOException e) {
-            futureResponse.complete(ResponseEntity.status(500).build());
+            return ResponseEntity.status(500).build();
         }
-        return futureResponse;
     }
 }

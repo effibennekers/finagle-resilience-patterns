@@ -16,6 +16,8 @@
         <div class="left">
             <div>overall success ratio</div>
             <div class="metrics" id="overallRatio"></div>
+            <div>unknown errors</div>
+            <div class="metrics" id="unknownErrors"></div>
         </div>
     </div>
     <div>
@@ -81,9 +83,13 @@
         <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle
             loaddbalance test
         </button>
+        <button id="apachestartfailover" class="btn btn-default start-test" type="submit">Start apache failover test
+        </button>
         <button id="finaglestartfailover" class="btn btn-default start-test" type="submit">Start finagle failover test
         </button>
-        <button id="apachestartfailover" class="btn btn-default start-test" type="submit">Start apache failover test
+        <button id="apachestartretry" class="btn btn-default start-test" type="submit">Start apache retry test
+        </button>
+        <button id="finaglestartretry" class="btn btn-default start-test" type="submit">Start finagle retry test
         </button>
     </div>
 </div>

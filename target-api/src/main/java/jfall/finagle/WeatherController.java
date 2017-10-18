@@ -20,7 +20,6 @@ public class WeatherController {
 
     public WeatherController(final ProcessSimulationParameters processSimulationParameters) {
         this.processSimulationParameters = processSimulationParameters;
-        System.err.println ("Using parameters: " + processSimulationParameters.toString());
     }
 
     @GetMapping("/weather")
@@ -30,8 +29,7 @@ public class WeatherController {
         if (processSimulationParameters.simulateFaiure()) {
             return ResponseEntity.notFound().build();
 
-        }
-        else {
+        } else {
             final WeatherReport report = new WeatherReport();
             report.setCondition(randomEnum(WeatherReport.Condition.class));
             report.setTemperature(-20 + random.nextInt(51));

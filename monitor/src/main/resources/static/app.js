@@ -2,7 +2,6 @@ var events = [];
 var windowSize = 10;
 
 
-var genericFailureCount = 0;
 var instances = [];
 var instanceTable = {};
 
@@ -125,10 +124,12 @@ function addInstanceToHtml(instance, index) {
     });
 }
 
+var eventId = 0;
+
 function registerEvent(event) {
+    events.push(event);
     var instance = instanceTable[event.instance];
     if (instance) {
-        events.push(event);
         instance.tps++;
     }
 }
@@ -167,16 +168,14 @@ function startTest(path) {
                 $("#winddirection").text(weather.windDirection);
 
             },
-            error: function () {
-                genericFailureCount++;
-            },
             complete: function (x) {
                 var end = new Date().getTime();
                 var duration = end - start;
                 var event = {
                     instance: x.getResponseHeader("instance"),
                     httpStatus: x.status,
-                    duration: duration
+                    duration: duration,
+                    id: eventId++
                 };
                 registerEvent(event);
 
@@ -212,6 +211,8 @@ function refreshDisplay() {
         $("#tps_" + index).text(instance.tps);
         instance.tps = 0;
     });
+
+    var totalCounter = 0;
     eventsToProcess.forEach(function (e) {
         var counter = counterTable[e.instance];
         if (counter) {
@@ -225,13 +226,12 @@ function refreshDisplay() {
             }
         }
         else {
-            console.log("unable to process event " + JSON.stringify(e));
+            totalCounter++;
         }
     });
 
+    $("#unknownErrors").text(totalCounter);
 
-    var totalCounter = genericFailureCount;
-    genericFailureCount = 0;
     var successCounter = 0;
     instances.forEach(function (instance, index) {
         var counter = counterTable[instance.name];
@@ -290,6 +290,12 @@ $(function () {
     });
     $("#apachestartfailover").click(function () {
         startTest("/api/apache/failover");
+    });
+    $("#apachestartretry").click(function () {
+        startTest("/api/apache/retry");
+    });
+    $("#finaglestartretry").click(function () {
+        startTest("/api/finagle/retry");
     });
     $("#reset").click(function () {
         events = [];

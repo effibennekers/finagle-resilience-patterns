@@ -66,7 +66,6 @@ public class ProcessSimulationParameters {
 
     public boolean simulateFaiure() {
         int dice = secureRandom.nextInt(100) + 1;
-        System.err.println("Faiure rate: " + failureRate + ", dice: " + dice);
         return dice < failureRate;
     }
 
@@ -76,6 +75,6 @@ public class ProcessSimulationParameters {
         return "base time: " + baseTime +
                 ", random: " + random +
                 ", random multiplier: " + randomMultiplier +
-                ", failure raite: " + failureRate;
+                ", failure rate: " + failureRate;
     }
 }
