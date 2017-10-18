@@ -27,16 +27,34 @@
 ---
 
 ## The challenge
-* Kaput
-* No kaput
+
+<img src="images/1103-Free-Clipart-Of-Chain-Links.jpg">
+
+Wat is resilience?
+
+Note:
+- Het probleem schetsen dat 100% uptime niet te halen is
+- 0.99 ^ 10
+- We roepen 24/7, wie denkt dat dit mogelijk is met Finagle?
+
+Beschrijf de case
+We hebben 3 instances van een api
+RPI 1) Weather service
+RPI 2) Weather service
+RPI 3) Weather fallback service (no wind)
+
 
 Note:
 - Hier notities....
 
+
+
 ^^^
 
-### Kaput
-* Yesyes
+### Weather API
+
+* Two instances of our weather service API
+
 
 ^^^
 
@@ -46,6 +64,7 @@ Note:
 ---
 
 ## Load balancing
+loadbalacing laten zien tussen RPI 1 en 2
 
 ```java
 @RequestMapping("/loadbalancing")
@@ -60,10 +79,12 @@ public String getLoadbalancing() {
 ---
 
 ## Retry
+Als RPI 1 flaky is (percentage failure 500)
 
 ---
 
 ## Failover
+fallback laten zien als RPI 1 en RPI 2 offline zijn -> RPI 3
 
 ---
 
