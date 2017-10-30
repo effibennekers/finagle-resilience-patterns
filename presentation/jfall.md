@@ -3,26 +3,22 @@
 
 ---
 
-## Agenda
-* Introductie
-* The Challenge
-* Load balancing
-* Retry
-* Failover
-* Contact information and questions
-
-*Dit laten we weg in de uiteindelijke presentatie*
-
----
-
 ## Introduction
 
-|  |  |  |
-|: |: |: |
-| <img src="images/Effi-Bennekers-2.0-280x280.jpg"> | Effi Bennekers | IT Chapter Lead Engineering @ ING |
-| <img src="images/Eggie-van-Buiten-280x280.jpg"> | Eggie van Buiten | Developer @ ING |
+|  |  |
+| - | - |
+| <img src="images/Effi-Bennekers-2.0-280x280.jpg"> | <img src="images/Eggie-van-Buiten-280x280.jpg"> |
+| Effi Bennekers | Eggie van Buiten |
+| IT Chapter Lead<br/>Engineering @ ING | Developer @ ING |
 
-*Dit kan nog wel iets leuker!*
+^^^
+
+<img src="images/brouw_effi.jpg">
+
+^^^
+
+<img src="images/Eggie-van-Buiten-280x280.jpg">
+Iets leuks over Eggie
 
 ---
 
@@ -30,67 +26,126 @@
 
 <img src="images/1103-Free-Clipart-Of-Chain-Links.jpg">
 
-Wat is resilience?
+Success rate of 0.99 ^ 100 = 0.37
 
+^^^
+
+### Resilience
+
+Wikipedia: The ability to provide and maintain an acceptable level of service in the face of faults and challenges to normal operation.
+ 
 Note:
+- "I'm going to ask you a question. Show of hands please: who thinks a service level of 24/7 is feasible?"
 - Het probleem schetsen dat 100% uptime niet te halen is
-- 0.99 ^ 10
-- We roepen 24/7, wie denkt dat dit mogelijk is met Finagle?
 
-Beschrijf de case
-We hebben 3 instances van een api
-RPI 1) Weather service
-RPI 2) Weather service
-RPI 3) Weather fallback service (no wind)
+^^^
 
+### Weather API use case
+
+<img src="images/Setup.png">
+
+* One instance of the client API
+* Two instances of the weather service API
+* One instance of the old weather service API
 
 Note:
-- Hier notities....
-
-
-
-^^^
-
-### Weather API
-
-* Two instances of our weather service API
-
+Beschrijf de case
+1 Website
+We hebben 1 instance van een client api. Mobiele telefoon, weerstation, in dit geval api voor web client. 
+We hebben 3 instances van een server api die weerrapporten levert
+RPI 1) Weather service 2.0
+RPI 2) Weather service 2.0
+RPI 3) Old Weather service 1.0 (no wind) we do not use this anymore, but it is still running.
 
 ^^^
 
-### No kaput
-* Nono
+### Client code and setup
+
+Code demo
+
+^^^
+
+### Finagle
+
+From https://twitter.github.io/finagle/:
+
+Finagle is an extensible RPC system for the JVM, used to construct high-concurrency servers. Finagle implements uniform client and server APIs for several protocols, and is designed for high performance and concurrency. Most of Finagle’s code is protocol agnostic, simplifying the implementation of new protocols.
 
 ---
 
 ## Load balancing
-loadbalacing laten zien tussen RPI 1 en 2
+
+Weather API 2.0:
 
 ```java
-@RequestMapping("/loadbalancing")
-public String getLoadbalancing() {
-    final long number = counter.incrementAndGet();
-    simulateHeavyProcessing();
-    return String.format("%d loadbalancing example from %s",
-        number, serviceName);
+@GetMapping("/weather")
+public ResponseEntity<WeatherReport> getReport() {
+    final WeatherReport report = new WeatherReport();
+    report.setCondition(...);
+    report.setTemperature(...);
+    report.setWindForce(...);
+    report.setWindDirection(...);
+    return ResponseEntity.ok(report);
 }
 ```
+
+^^^
+
+### Load balancing
+
+<img src="images/Loadbalancing_setup.png">
 
 ---
 
 ## Retry
-Als RPI 1 flaky is (percentage failure 500)
+
+<img src="images/Retry_setup.png">
 
 ---
 
 ## Failover
-fallback laten zien als RPI 1 en RPI 2 offline zijn -> RPI 3
+
+Weather API 1.0:
+
+```java
+@GetMapping("/weather")
+public ResponseEntity<WeatherReport> getReport() {
+    final WeatherReport report = new WeatherReport();
+    report.setCondition(...);
+    report.setTemperature(...);
+    #report.setWindForce(...); //DOES NOT WORK
+    #report.setWindDirection(...); //DOES NOT WORK
+    return ResponseEntity.ok(report);
+}
+```
+
+^^^
+
+### Failover
+
+<img src="images/Failover_setup.png">
 
 ---
 
-## Key takeaways
-* Finagle is cool
+## Recap
+
+* Resilience
+* Load balancing
+* Retry
+* Failover
+* Finagle
+
+Note:
+So if you take your uptime seriously and want a solution fast, use Finagle! 
 
 ---
 
-## Contact information and questions
+## Questions?
+
+Effi Bennekers
+Efraim.Bennekers@ing.nl
+https://www.linkedin.com/in/effibennekers/
+@ebennekers
+
+Eggie van Buiten
+Eggie.van.Buiten@ingbank.com

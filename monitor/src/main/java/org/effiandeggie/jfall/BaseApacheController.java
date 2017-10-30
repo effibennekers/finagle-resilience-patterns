@@ -9,12 +9,12 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import static java.lang.String.format;
 
-public class BaseAppacheController {
+public class BaseApacheController {
 
     private static final int MAX_LOAD = 10;
     protected final CloseableHttpClient httpClient;
 
-    public BaseAppacheController(final Instance ... instances) {
+    public BaseApacheController(final Instance... instances) {
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(MAX_LOAD * instances.length);
         cm.setDefaultMaxPerRoute(MAX_LOAD);

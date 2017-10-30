@@ -10,7 +10,7 @@
 
     <modules>
         <module>data</module>
-        <module>target-api</module>
+        <module>weather-api</module>
         <module>monitor</module>
     </modules>
 
