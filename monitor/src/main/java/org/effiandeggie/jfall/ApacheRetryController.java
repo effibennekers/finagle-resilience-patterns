@@ -18,11 +18,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @RestController
-public class ApacheRetryController extends BaseAppacheController {
+public class ApacheRetryController extends BaseApacheController {
 
-
-    private static final long MAX_DURATION = 1000_000_000;
-    private static final String ENCODING = "UTF-8";
     private final Instance primaryInstance;
 
     @Autowired

@@ -12,10 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
-public class ApacheLoadbalanceController extends BaseAppacheController {
+public class ApacheLoadbalanceController extends BaseApacheController {
 
     private Instance[] instances;
 
@@ -32,7 +31,6 @@ public class ApacheLoadbalanceController extends BaseAppacheController {
         final Instance selectedInstance = instances[random.nextInt(instances.length)];
         final HttpGet get = createGetRequest(selectedInstance);
         httpServletResponse.setHeader("instance", selectedInstance.getName());
-        final CompletableFuture<ResponseEntity<String>> futureResponse = new CompletableFuture<>();
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {

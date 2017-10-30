@@ -44,8 +44,7 @@ public class FinagleLoadbalanceController {
             httpServletResponse.setHeader("instance", instanceName);
             if (response.getStatusCode() == 200) {
                 return ResponseEntity.ok(response.contentString());
-            }
-            else {
+            } else {
                 return ResponseEntity.status(response.getStatusCode()).build();
             }
         });

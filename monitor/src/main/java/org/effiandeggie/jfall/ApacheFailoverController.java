@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
-public class ApacheFailoverController extends BaseAppacheController {
+public class ApacheFailoverController extends BaseApacheController {
 
 
     private final Instance primaryInstance;
