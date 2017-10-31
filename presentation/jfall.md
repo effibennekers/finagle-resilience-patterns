@@ -22,11 +22,27 @@ Iets leuks over Eggie
 
 ---
 
+<img src="images/24-7.jpg">
+
+^^^
+
 ## The challenge
 
 <img src="images/1103-Free-Clipart-Of-Chain-Links.jpg">
 
 Success rate of 0.99 ^ 100 = 0.37
+
+^^^
+
+### Micro services  (logical)
+
+<img src="images/microservice-landscape.jpeg">
+
+^^^
+
+### Micro services  (physical)
+
+<img src="images/datacenter.jpeg">
 
 ^^^
 
