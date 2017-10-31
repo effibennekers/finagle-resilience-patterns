@@ -6,7 +6,6 @@ import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
 import com.twitter.util.Future;
 import org.effiandeggie.finagle.filters.HostFilter$;
-import org.effiandeggie.jfall.utils.FutureUtil;
 import org.effiandeggie.jfall.instances.InstanceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,24 +21,20 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
     private Service<Request, Response> client;
 
     @Autowired
-    public FinagleLoadbalanceController(final InstanceManager instanceManager) {
+    public FinagleLoadbalanceController(InstanceManager instanceManager) {
         super(instanceManager);
-        client = HostFilter$.MODULE$.client().newService(instancesToConnectionString(instanceManager.getInstances()), "loadbalancer");
+        String primaryConnectionString = instancesToConnectionString(instanceManager.getPrimaryInstances());
+        //"http://effi:8080,http://eggie:8080"
+
+        client = HostFilter$.MODULE$.client().newService(primaryConnectionString, "loadbalancer");
     }
 
     @GetMapping(value = "/api/finagle/loadbalancing")
-    public CompletableFuture<ResponseEntity<String>> loadbalance(final HttpServletResponse httpServletResponse) {
-        final Request request = Request.apply(Method.Get(), "/weather");
+    public CompletableFuture<ResponseEntity<String>> loadbalance(HttpServletResponse httpServletResponse) {
+        Request request = Request.apply(Method.Get(), "/weather");
         request.host("localhost");
-        final Future<ResponseEntity<String>> futureResponse = client.apply(request).map(response -> {
-            setHeadersForDemo(httpServletResponse, response);
-            if (response.getStatusCode() == 200) {
-                return ResponseEntity.ok(response.contentString());
-            } else {
-                return ResponseEntity.status(response.getStatusCode()).build();
-            }
-        });
-        return FutureUtil.toJavaFuture(futureResponse);
-    }
 
+        Future<Response> futureResponse = client.apply(request);
+        return toSpringResponse(futureResponse);
+    }
 }
