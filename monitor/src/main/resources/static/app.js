@@ -276,8 +276,8 @@ $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    $("#apachestartloadbalancing").click(function () {
-        startTest("/api/apache/loadbalancing");
+    $("#weather").click(function () {
+        startTest("/api/weather");
     });
     $("#stopTest").click(function () {
         stopTest();

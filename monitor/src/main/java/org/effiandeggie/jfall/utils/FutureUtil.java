@@ -1,4 +1,4 @@
-package org.effiandeggie.jfall;
+package org.effiandeggie.jfall.utils;
 
 import com.twitter.util.Future;
 import scala.runtime.AbstractFunction1;

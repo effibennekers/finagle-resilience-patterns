@@ -1,4 +1,4 @@
-package org.effiandeggie.jfall;
+package org.effiandeggie.jfall.instances;
 
 
 import org.springframework.http.ResponseEntity;
@@ -12,10 +12,10 @@ public class InstanceController {
 
 
     @Resource
-    private Instance[] instances;
+    private InstanceManager instanceManager;
 
     @GetMapping("/instances")
     public ResponseEntity<Instance[]> getInstances() {
-        return ResponseEntity.ok(instances);
+        return ResponseEntity.ok(instanceManager.getInstances());
     }
 }

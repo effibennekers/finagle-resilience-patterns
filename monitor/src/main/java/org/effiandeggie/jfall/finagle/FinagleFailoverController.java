@@ -1,4 +1,4 @@
-package org.effiandeggie.jfall;
+package org.effiandeggie.jfall.finagle;
 
 import com.twitter.finagle.Service;
 import com.twitter.finagle.http.Method;
@@ -7,8 +7,10 @@ import com.twitter.finagle.http.Response;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
+import org.effiandeggie.jfall.utils.FutureUtil;
+import org.effiandeggie.jfall.instances.Instance;
+import org.effiandeggie.jfall.instances.InstanceManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-public class FinagleFailoverController {
+public class FinagleFailoverController extends BaseFinagleController {
 
-    private Instance primaryInstance;
+    private Instance[] primaryInstances;
 
     private Instance secondaryInstance;
 
@@ -28,20 +30,19 @@ public class FinagleFailoverController {
     private Service<Request, Response> secondaryClient;
 
     @Autowired
-    public FinagleFailoverController(@Qualifier("primaryInstance") final Instance primaryInstance,
-                                     @Qualifier("secondaryInstance") final Instance secondaryInstance) {
-        this.primaryInstance = primaryInstance;
-        this.secondaryInstance = secondaryInstance;
-
+    public FinagleFailoverController(final InstanceManager instanceManager) {
+        super(instanceManager);
+        this.primaryInstances = instanceManager.getPrimaryInstances();
+        this.secondaryInstance = instanceManager.getSecondaryInstances()[0];
     }
 
     @PostConstruct
     public void init() {
         primaryClient = HostFilter$.MODULE$.client()
                 .withSessionQualifier().noFailFast()
-                .newService(primaryInstance.getHost() + ":" + primaryInstance.getPort(), "primary");
+                .newService(instancesToConnectionString(primaryInstances), "primary");
         secondaryClient = HostFilter$.MODULE$.client().
-                newService(secondaryInstance.getHost() + ":" + secondaryInstance.getPort(), "secondary");
+                newService(instancesToConnectionString(secondaryInstance), "secondary");
     }
 
     @GetMapping("/api/finagle/failover")
@@ -50,11 +51,11 @@ public class FinagleFailoverController {
         primaryRequest.host("localhost");
         final Future<Try<Response>> tryableFutureResponse = primaryClient.apply(primaryRequest).liftToTry();
         final Future<Response> futureResponse = tryableFutureResponse.flatMap(tryResponse -> {
-            if (isValidRequest(tryResponse)) {
-                httpServletResponse.setHeader("instance", primaryInstance.getName());
+            if (isValidResponse(tryResponse)) {
+                setHeadersForDemo(httpServletResponse, tryResponse.get());
                 return Future.value(tryResponse.get());
             } else {
-                httpServletResponse.setHeader("instance", secondaryInstance.getName());
+                setHeadersForDemo(httpServletResponse, secondaryInstance);
                 final Request secondaryRequest = Request.apply(Method.Get(), "/weather");
                 secondaryRequest.host("localhost");
                 return secondaryClient.apply(secondaryRequest);
@@ -71,7 +72,7 @@ public class FinagleFailoverController {
                 }));
     }
 
-    private boolean isValidRequest(final Try<Response> tryResponse) {
+    private boolean isValidResponse(final Try<Response> tryResponse) {
         return tryResponse.isReturn() && tryResponse.get().getStatusCode() == 200;
     }
 

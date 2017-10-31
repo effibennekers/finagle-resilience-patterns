@@ -1,4 +1,4 @@
-package org.effiandeggie.jfall;
+package org.effiandeggie.jfall.instances;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
