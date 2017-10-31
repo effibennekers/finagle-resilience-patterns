@@ -26,6 +26,7 @@
 
 ---
 
+
 ## The challenge
 
 <img src="images/1103-Free-Clipart-Of-Chain-Links.jpg">
@@ -47,7 +48,27 @@ RPI 3) Weather fallback service (no wind)
 Note:
 - Hier notities....
 
+^^^
 
+### Micro services  (logical)
+
+<img src="images/microservice-landscape.jpeg">
+
+^^^
+
+### Micro services  (physical)
+
+<img src="images/datacenter.jpeg">
+
+^^^
+
+<img src="images/24-7.jpg">
+
+^^^
+
+### Webserver resources
+
+<img src="images/webserver.jpg">
 
 ^^^
 
