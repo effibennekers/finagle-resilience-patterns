@@ -17,8 +17,7 @@
 
 ^^^
 
-<img src="images/Eggie-van-Buiten-280x280.jpg">
-Iets leuks over Eggie
+<img src="images/guitar.jpg" width="40%">
 
 ---
 
