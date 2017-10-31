@@ -11,7 +11,7 @@
     <modules>
         <module>data</module>
         <module>weather-api</module>
-        <module>monitor</module>
+        <module>client</module>
     </modules>
 
     <properties>
