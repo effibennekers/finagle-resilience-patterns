@@ -59,7 +59,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup_initial.png" width="500px">
+<img src="images/Setup_Initial_1.png" width="500px">
 
 * One instance of the client API
 * Two instances of the weather service API
@@ -127,7 +127,7 @@ Weather API 2.0:
 
 ### Load balancing
 
-<img src="images/Setup_initial.png" width="500px">
+<img src="images/Setup_Initial_1.png" width="500px">
 
 ^^^
 
@@ -338,4 +338,4 @@ https://www.linkedin.com/in/effibennekers/
 Eggie van Buiten
 Eggie.van.Buiten@ingbank.com
 
-Disclaimer: The views and opinions expressed in this article are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
+Disclaimer: The views and opinions expressed in this presentation are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
