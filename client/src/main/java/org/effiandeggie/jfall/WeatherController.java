@@ -8,9 +8,6 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.effiandeggie.jfall.instances.Instance;
-import org.effiandeggie.jfall.instances.InstanceManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,40 +15,30 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static java.lang.String.format;
-
 @RestController
 public class WeatherController {
 
-    private static final int MAX_LOAD = 10;
-    private final CloseableHttpClient httpClient;
-    private final String hostName;
-    private final int port;
+    private CloseableHttpClient httpClient;
 
+    public WeatherController() {
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(10);
+        cm.setDefaultMaxPerRoute(10);
 
-    @Autowired
-    public WeatherController(final InstanceManager instanceManager) {
-
-        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(MAX_LOAD);
-        cm.setDefaultMaxPerRoute(MAX_LOAD);
-        hostName = "weather1";
-        port = 8080;
-
-        final HttpHost host = new HttpHost(hostName, port);
-        cm.setMaxPerRoute(new HttpRoute(host), MAX_LOAD);
+        HttpHost host = new HttpHost("weather1", 8080);
+        cm.setMaxPerRoute(new HttpRoute(host), 10);
 
         httpClient = HttpClients.custom().setConnectionManager(cm).build();
     }
 
     @GetMapping(value = "/api/weather")
-    public ResponseEntity<String> loadbalance(final HttpServletResponse httpServletResponse) {
-        final HttpGet get = new HttpGet(format("http://%s:%d/weather", hostName, port));
-        httpServletResponse.setHeader("instance", hostName);
+    public ResponseEntity<String> loadbalance(HttpServletResponse httpServletResponse) {
+        HttpGet get = new HttpGet("http://weather1:8080/weather");
+        httpServletResponse.setHeader("instance", "weather1");
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            final int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {
-                final String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
                 return ResponseEntity.ok(data);
             } else {
                 return ResponseEntity.status(statusCode).build();

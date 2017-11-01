@@ -5,6 +5,7 @@ import com.twitter.util.Future;
 import org.effiandeggie.jfall.instances.Instance;
 import org.effiandeggie.jfall.instances.InstanceManager;
 import org.effiandeggie.jfall.utils.FutureUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -13,11 +14,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class BaseFinagleController {
 
-    private final InstanceManager instanceManager;
-
-    public BaseFinagleController(final InstanceManager instanceManager) {
-        this.instanceManager = instanceManager;
-    }
+    @Autowired
+    private InstanceManager instanceManager;
 
     private void setHeadersForDemo(final HttpServletResponse httpServletResponse, final Response response) {
         final String instanceName = instanceManager.lookup(response).map(Instance::getName).orElse("unknown");
