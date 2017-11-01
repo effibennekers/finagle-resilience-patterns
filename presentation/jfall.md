@@ -21,11 +21,13 @@
 
 ---
 
-<img src="images/24-7.jpg">
+## The challenge
+
+<img src="images/247.jpg" width="600px">
 
 ^^^
 
-## The challenge
+### The challenge
 
 <img src="images/1103-Free-Clipart-Of-Chain-Links.jpg">
 
@@ -35,13 +37,13 @@ Success rate of 0.99 ^ 100 = 0.37
 
 ### Micro services  (logical)
 
-<img src="images/microservice-landscape.jpeg">
+<img src="images/Services4.png">
 
 ^^^
 
 ### Micro services  (physical)
 
-<img src="images/datacenter.jpeg">
+<img src="images/server-rack.jpg" width = "300px">
 
 ^^^
 
@@ -57,7 +59,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup_Initial.png">
+<img src="images/Setup_Initial.png" width="500px">
 
 * One instance of the client API
 * Two instances of the weather service API
