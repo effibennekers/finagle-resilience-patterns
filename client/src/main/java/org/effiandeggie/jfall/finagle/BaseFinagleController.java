@@ -9,9 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class BaseFinagleController {
 
@@ -23,15 +21,7 @@ public class BaseFinagleController {
 
     private void setHeadersForDemo(final HttpServletResponse httpServletResponse, final Response response) {
         final String instanceName = instanceManager.lookup(response).map(Instance::getName).orElse("unknown");
-        System.err.println ("Instance name: " + instanceName);
-        System.err.println ("response headers name: " + response.headerMap());
         httpServletResponse.setHeader("instance", instanceName);
-    }
-
-    protected String instancesToConnectionString(final Instance... instances) {
-        return Arrays.stream(instances).map(instance ->
-                instance.getHost() + ":" + instance.getPort()).collect(Collectors.joining(","));
-
     }
 
     protected CompletableFuture<ResponseEntity<String>> toSpringResponse(final Future<Response> futureResponse, HttpServletResponse httpServletResponse) {
@@ -45,10 +35,7 @@ public class BaseFinagleController {
                         return ResponseEntity.status(response.getStatusCode()).build();
                     }
                 }));
-        javaFutureResponse.exceptionally(y -> {
-            final ResponseEntity<String> errorResult = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            return errorResult;
-        });
+        javaFutureResponse.exceptionally(x -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         return javaFutureResponse;
     }
 }

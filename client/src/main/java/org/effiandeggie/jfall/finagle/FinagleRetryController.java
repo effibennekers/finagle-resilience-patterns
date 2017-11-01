@@ -15,7 +15,6 @@ import com.twitter.util.Duration;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
-import org.effiandeggie.jfall.instances.Instance;
 import org.effiandeggie.jfall.instances.InstanceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,15 +34,12 @@ public class FinagleRetryController extends BaseFinagleController {
     @Autowired
     public FinagleRetryController(InstanceManager instanceManager) {
         super(instanceManager);
-        Instance instance = instanceManager.getPrimaryInstances()[0];
 
-        String connectionString = instancesToConnectionString(instance);
-        //"http://effi:8080"
+        String connectionString = "weather1:8080";
 
         RetryBudget budget = RetryBudget$.MODULE$.apply();
 
         RetryPolicy<Tuple2<Request, Try<Response>>> policy = new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>() {
-
             public Duration backoffAt(int retry) {
                 return Duration.fromMilliseconds(retry * 10);
             }

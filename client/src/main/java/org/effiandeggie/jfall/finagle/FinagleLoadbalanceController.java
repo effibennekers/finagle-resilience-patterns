@@ -23,8 +23,7 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
     @Autowired
     public FinagleLoadbalanceController(InstanceManager instanceManager) {
         super(instanceManager);
-        String connectionString = instancesToConnectionString(instanceManager.getPrimaryInstances());
-        //"effi:8080,eggie:8080"
+        String connectionString = "weather1:8080,weather2:8080";
 
         client = HostFilter$.MODULE$.client().newService(connectionString, "loadbalancer");
     }

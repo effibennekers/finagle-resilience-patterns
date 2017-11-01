@@ -27,13 +27,12 @@ public class FinagleFailoverController extends BaseFinagleController {
     public FinagleFailoverController(InstanceManager instanceManager) {
         super(instanceManager);
 
-        String primaryConnectionString = instancesToConnectionString(instanceManager.getPrimaryInstances());
+        String primaryConnectionString = "weather1:8080,weather2:8080";
         primaryClient = HostFilter$.MODULE$.client()
                 .withSessionQualifier().noFailFast()
                 .newService(primaryConnectionString, "primary");
 
-        Instance secondaryInstance = instanceManager.getSecondaryInstances()[0];
-        String secondaryConnectionString = instancesToConnectionString(secondaryInstance);
+        String secondaryConnectionString = "oldweather:8080";
         secondaryClient = HostFilter$.MODULE$.client(). newService(secondaryConnectionString, "secondary");
     }
 

@@ -16,27 +16,15 @@ public class Application {
     }
 
 
-//    @Bean
-//    public InstanceManager instanceManager() {
-//        final Instance[] primaryInstances = new Instance[]{
-//                new Instance("effi", "effi", 8080),
-//                new Instance("eggie", "eggie", 8080)
-//
-//        };
-//        final Instance[] secondaryInstances = new Instance[]{
-//                new Instance("oldweather", "oldweather", 8080)
-//        };
-//        return new InstanceManager(primaryInstances, secondaryInstances);
-//    }
     @Bean
     public InstanceManager instanceManager() {
         final Instance[] primaryInstances = new Instance[]{
-                new Instance("effi", "localhost", 8081),
-                new Instance("eggie", "localhost", 8082)
+                new Instance("weather1", "weather1", 8080),
+                new Instance("weather2", "weather2", 8080)
 
         };
         final Instance[] secondaryInstances = new Instance[]{
-                new Instance("oldweather", "localhost", 8083)
+                new Instance("oldweather", "oldweather", 8080)
         };
         return new InstanceManager(primaryInstances, secondaryInstances);
     }

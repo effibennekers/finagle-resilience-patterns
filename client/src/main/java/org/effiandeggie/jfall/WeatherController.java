@@ -27,19 +27,16 @@ public class WeatherController {
     private final CloseableHttpClient httpClient;
     private final String hostName;
     private final int port;
-    private final String instanceName;
 
 
     @Autowired
     public WeatherController(final InstanceManager instanceManager) {
-        final Instance instance = instanceManager.getPrimaryInstances()[0];
 
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(MAX_LOAD);
         cm.setDefaultMaxPerRoute(MAX_LOAD);
-        hostName = instance.getHost();
-        port = instance.getPort();
-        instanceName = instance.getName();
+        hostName = "weather1";
+        port = 8080;
 
         final HttpHost host = new HttpHost(hostName, port);
         cm.setMaxPerRoute(new HttpRoute(host), MAX_LOAD);
@@ -50,7 +47,7 @@ public class WeatherController {
     @GetMapping(value = "/api/weather")
     public ResponseEntity<String> loadbalance(final HttpServletResponse httpServletResponse) {
         final HttpGet get = new HttpGet(format("http://%s:%d/weather", hostName, port));
-        httpServletResponse.setHeader("instance", instanceName);
+        httpServletResponse.setHeader("instance", hostName);
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {
