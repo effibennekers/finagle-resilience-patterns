@@ -21,13 +21,11 @@ public class BaseFinagleController {
         this.instanceManager = instanceManager;
     }
 
-    protected void setHeadersForDemo(final HttpServletResponse httpServletResponse, final Response response) {
+    private void setHeadersForDemo(final HttpServletResponse httpServletResponse, final Response response) {
         final String instanceName = instanceManager.lookup(response).map(Instance::getName).orElse("unknown");
+        System.err.println ("Instance name: " + instanceName);
+        System.err.println ("response headers name: " + response.headerMap());
         httpServletResponse.setHeader("instance", instanceName);
-    }
-
-    protected void setHeadersForDemo(final HttpServletResponse httpServletResponse, final Instance instance) {
-        httpServletResponse.setHeader("instance", instance.getName());
     }
 
     protected String instancesToConnectionString(final Instance... instances) {
@@ -36,9 +34,11 @@ public class BaseFinagleController {
 
     }
 
-    protected CompletableFuture<ResponseEntity<String>> toSpringResponse(final Future<Response> futureResponse) {
+    protected CompletableFuture<ResponseEntity<String>> toSpringResponse(final Future<Response> futureResponse, HttpServletResponse httpServletResponse) {
         final CompletableFuture<ResponseEntity<String>> javaFutureResponse = FutureUtil.toJavaFuture(futureResponse.map(
+
                 response -> {
+                    setHeadersForDemo(httpServletResponse, response);
                     if (response.getStatusCode() == 200) {
                         return ResponseEntity.ok(response.getContentString());
                     } else {

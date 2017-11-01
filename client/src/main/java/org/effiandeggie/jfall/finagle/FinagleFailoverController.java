@@ -20,9 +20,6 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class FinagleFailoverController extends BaseFinagleController {
 
-
-    private Instance secondaryInstance;
-
     private Service<Request, Response> primaryClient;
     private Service<Request, Response> secondaryClient;
 
@@ -35,30 +32,28 @@ public class FinagleFailoverController extends BaseFinagleController {
                 .withSessionQualifier().noFailFast()
                 .newService(primaryConnectionString, "primary");
 
-        this.secondaryInstance = instanceManager.getSecondaryInstances()[0];
+        Instance secondaryInstance = instanceManager.getSecondaryInstances()[0];
         String secondaryConnectionString = instancesToConnectionString(secondaryInstance);
-        secondaryClient = HostFilter$.MODULE$.client().
-                newService(secondaryConnectionString, "secondary");
+        secondaryClient = HostFilter$.MODULE$.client(). newService(secondaryConnectionString, "secondary");
     }
 
     @GetMapping("/api/finagle/failover")
     public CompletableFuture<ResponseEntity<String>> getFailover(HttpServletResponse httpServletResponse) {
         Request primaryRequest = Request.apply(Method.Get(), "/weather");
         primaryRequest.host("localhost");
+
         Future<Try<Response>> tryableFutureResponse = primaryClient.apply(primaryRequest).liftToTry();
         Future<Response> futureResponse = tryableFutureResponse.flatMap(tryResponse -> {
             if (isValidResponse(tryResponse)) {
-                setHeadersForDemo(httpServletResponse, tryResponse.get());
                 return Future.value(tryResponse.get());
             } else {
-                setHeadersForDemo(httpServletResponse, secondaryInstance);
                 Request secondaryRequest = Request.apply(Method.Get(), "/weather");
                 secondaryRequest.host("localhost");
                 return secondaryClient.apply(secondaryRequest);
             }
         });
 
-        return toSpringResponse(futureResponse);
+        return toSpringResponse(futureResponse, httpServletResponse);
     }
 
     private boolean isValidResponse(Try<Response> tryResponse) {

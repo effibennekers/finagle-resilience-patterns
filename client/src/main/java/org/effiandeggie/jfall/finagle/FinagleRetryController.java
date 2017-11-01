@@ -29,14 +29,13 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class FinagleRetryController extends BaseFinagleController {
 
-    private Instance instance;
 
     private Service<Request, Response> client;
 
     @Autowired
     public FinagleRetryController(InstanceManager instanceManager) {
         super(instanceManager);
-        this.instance = instanceManager.getPrimaryInstances()[0];
+        Instance instance = instanceManager.getPrimaryInstances()[0];
 
         String connectionString = instancesToConnectionString(instance);
         //"http://effi:8080"
@@ -66,9 +65,7 @@ public class FinagleRetryController extends BaseFinagleController {
         Request primaryRequest = Request.apply(Method.Get(), "/weather");
         primaryRequest.host("localhost");
 
-        setHeadersForDemo(httpServletResponse, instance);
-
         Future<Response> futureResponse = client.apply(primaryRequest);
-        return toSpringResponse(futureResponse);
+        return toSpringResponse(futureResponse, httpServletResponse);
     }
 }

@@ -23,10 +23,10 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
     @Autowired
     public FinagleLoadbalanceController(InstanceManager instanceManager) {
         super(instanceManager);
-        String primaryConnectionString = instancesToConnectionString(instanceManager.getPrimaryInstances());
-        //"http://effi:8080,http://eggie:8080"
+        String connectionString = instancesToConnectionString(instanceManager.getPrimaryInstances());
+        //"effi:8080,eggie:8080"
 
-        client = HostFilter$.MODULE$.client().newService(primaryConnectionString, "loadbalancer");
+        client = HostFilter$.MODULE$.client().newService(connectionString, "loadbalancer");
     }
 
     @GetMapping(value = "/api/finagle/loadbalancing")
@@ -35,6 +35,6 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
         request.host("localhost");
 
         Future<Response> futureResponse = client.apply(request);
-        return toSpringResponse(futureResponse);
+        return toSpringResponse(futureResponse, httpServletResponse);
     }
 }
