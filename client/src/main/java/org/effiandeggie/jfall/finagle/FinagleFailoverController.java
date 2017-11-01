@@ -30,21 +30,25 @@ public class FinagleFailoverController extends BaseFinagleController {
 
     @GetMapping("/api/finagle/failover")
     public CompletableFuture<ResponseEntity<String>> getFailover(HttpServletResponse httpServletResponse) {
-        Request primaryRequest = Request.apply(Method.Get(), "/weather");
-        primaryRequest.host("localhost");
+        Request primaryRequest = createRequest();
 
         Future<Try<Response>> tryableFutureResponse = primaryClient.apply(primaryRequest).liftToTry();
         Future<Response> futureResponse = tryableFutureResponse.flatMap(tryResponse -> {
             if (isValidResponse(tryResponse)) {
                 return Future.value(tryResponse.get());
             } else {
-                Request secondaryRequest = Request.apply(Method.Get(), "/weather");
-                secondaryRequest.host("localhost");
+                Request secondaryRequest = createRequest();
                 return secondaryClient.apply(secondaryRequest);
             }
         });
 
         return toSpringResponse(futureResponse, httpServletResponse);
+    }
+
+    private Request createRequest() {
+        Request request = Request.apply(Method.Get(), "/weather");
+        request.host("localhost");
+        return request;
     }
 
     private boolean isValidResponse(Try<Response> tryResponse) {

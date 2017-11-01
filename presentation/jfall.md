@@ -59,7 +59,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup_Initial.png" width="500px">
+<img src="images/Setup_initial.png" width="500px">
 
 * One instance of the client API
 * Two instances of the weather service API
@@ -100,6 +100,14 @@ From https://twitter.github.io/finagle/:
 
 Finagle is an extensible RPC system for the JVM, used to construct high-concurrency servers. Finagle implements uniform client and server APIs for several protocols, and is designed for high performance and concurrency. Most of Finagle’s code is protocol agnostic, simplifying the implementation of new protocols.
 
+^^^
+
+## Finagle
+
+From https://twitter.github.io/scala_school/:
+
+<img src="images/finagle-filter-server.png" width="700px">
+
 ---
 
 ## Load balancing
@@ -119,7 +127,7 @@ Weather API 2.0:
 
 ### Load balancing
 
-<img src="images/Setup_Initial.png" width="500px">
+<img src="images/Setup_initial.png" width="500px">
 
 ^^^
 
@@ -230,7 +238,7 @@ CompletableFuture<ResponseEntity<String>> getRetry() {
     request.host("localhost");
 
     Future<Response> futureResponse = client.apply(request);
-    return toSpringResponse(futureResponse, httpServletResponse);
+    return toSpringResponse(futureResponse);
 }
 ```
 
@@ -287,7 +295,7 @@ Weather API 1.0:
 ```java
 @GetMapping("/api/finagle/failover")
 CompletableFuture<ResponseEntity<String>> getFailover() {
-  Request primaryRequest = Request.apply( // ...
+  Request primaryRequest = createRequest();
   Future<Try<Response>> tryableFutureResponse =
     primaryClient.apply(primaryRequest).liftToTry();
   
@@ -296,7 +304,7 @@ CompletableFuture<ResponseEntity<String>> getFailover() {
       if (isValidResponse(tryResponse)) {
         return Future.value(tryResponse.get());
       } else {
-        Request secondaryRequest = Request.apply( / ...
+        Request secondaryRequest = createRequest();
         return secondaryClient.apply(secondaryRequest);
       }
    });
