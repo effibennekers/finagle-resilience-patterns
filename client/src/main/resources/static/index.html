@@ -14,13 +14,11 @@
 <div id="main-content" class="container table">
     <div id="instances-container">
         <div class="left">
-            <div>overall success ratio</div>
+            <div>overall success ratio&nbsp;</div>
             <div class="metrics" id="overallRatio"></div>
-            <div>unknown errors</div>
+            <div>unknown errors&nbsp;</div>
             <div class="metrics" id="unknownErrors"></div>
         </div>
-    </div>
-    <div>
         <table>
             <thead>
             <tr>
@@ -40,8 +38,8 @@
             <tbody id="instance-table">
             </tbody>
         </table>
-
     </div>
+    <br/>
     <div>
         <div class="left">
             <div>temperature</div>
@@ -64,20 +62,24 @@
 
 
 <div class="col-md-6">
-    <form class="configuration">
-        <button id="reset" class="btn btn-default" type="submit">Reset statistics</button>
-        <label for="windowSize">Window size</label>
-        <input type="number" id="windowSize">
-        <button id="refreshWindowSize" class="btn btn-default" type="submit">update</button>
-    </form>
-    <form class="configuration">
-        <label for="targetTps">target TPS</label>
-        <input type="number" id="targetTps">
-        <button id="stopTest" class="btn btn-default" type="submit">Stop test</button>
+    <!--<form class="configuration">-->
+        <!--<label for="windowSize">Window size</label>-->
+        <input hidden="hidden" type="number" id="windowSize">
+        <!--<button id="refreshWindowSize" class="btn btn-default" type="submit">update</button>-->
+    <!--</form>-->
+    <!--<form class="configuration">-->
+        <!--<label for="targetTps">target TPS</label>-->
+        <input hidden="hidden" type="number" id="targetTps">
 
-    </form>
+    <!--</form>-->
+    <div>
+    <button id="reset" class="btn btn-default" type="submit">Reset statistics</button>
+    <button id="stopTest" class="btn btn-default" type="submit">Stop test</button>
+    </div>
     <div>
         <button id="weather" class="btn btn-default start-test" type="submit">Simple weather test</button>
+    </div>
+    <div>
         <button id="finaglestartloadbalancing" class="btn btn-default start-test" type="submit">Start finagle
             loaddbalance test
         </button>
