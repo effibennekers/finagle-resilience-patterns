@@ -38,13 +38,16 @@ public class WeatherController {
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {
-                String data = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-                return ResponseEntity.ok(data);
+                return ResponseEntity.ok(getContentString(response));
             } else {
                 return ResponseEntity.status(statusCode).build();
             }
         } catch (IOException e) {
             return ResponseEntity.status(500).build();
         }
+    }
+
+    private String getContentString(final CloseableHttpResponse response) throws IOException {
+        return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
     }
 }

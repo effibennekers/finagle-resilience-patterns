@@ -76,7 +76,19 @@ RPI 3) Old Weather service 1.0 (no wind) we do not use this anymore, but it is s
 
 ### Client code and setup
 
-Code demo
+```java
+@GetMapping(value = "/api/weather")
+public ResponseEntity<String> loadbalance() {
+  HttpGet get = new HttpGet("http://weather1:8080/weather");
+  CloseableHttpResponse response = httpClient.execute(get);
+  int statusCode = response.getStatusLine().getStatusCode();
+  if (statusCode == 200) {
+    return ResponseEntity.ok(getContentString(response));
+  } else {
+    return ResponseEntity.status(statusCode).build();
+  }
+}
+```
 
 ^^^
 
