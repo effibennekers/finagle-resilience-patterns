@@ -119,6 +119,12 @@ Weather API 2.0:
 
 ### Load balancing
 
+<img src="images/Setup_Initial.png" width="500px">
+
+^^^
+
+### Load balancing
+
 <img src="images/Setup_Loadbalancing_1.png" width="500px">
 
 ^^^
@@ -181,3 +187,5 @@ https://www.linkedin.com/in/effibennekers/
 
 Eggie van Buiten
 Eggie.van.Buiten@ingbank.com
+
+Disclaimer: The views and opinions expressed in this article are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
