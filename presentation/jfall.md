@@ -57,7 +57,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup.png">
+<img src="images/Setup_initial.png">
 
 * One instance of the client API
 * Two instances of the weather service API
@@ -108,13 +108,13 @@ public ResponseEntity<WeatherReport> getReport() {
 
 ### Load balancing
 
-<img src="images/Loadbalancing_setup.png">
+<img src="images/Setup_Loadbalancing.png" width="500px">
 
 ---
 
 ## Retry
 
-<img src="images/Retry_setup.png">
+<img src="images/Setup_Retry.png" width="500px">
 
 ---
 
@@ -138,7 +138,12 @@ public ResponseEntity<WeatherReport> getReport() {
 
 ### Failover
 
-<img src="images/Failover_setup.png">
+<img src="images/Setup_Failover_1.png" width="500px">
+
+^^^
+### Failover
+
+<img src="images/Setup_Failover_2.png" width="500px">
 
 ---
 
