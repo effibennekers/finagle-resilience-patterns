@@ -59,7 +59,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup_Initial.png" width="500px">
+<img src="images/Setup_Initial_1.png" width="500px">
 
 * One instance of the client API
 * Two instances of the weather service API
@@ -119,7 +119,7 @@ Weather API 2.0:
 
 ### Load balancing
 
-<img src="images/Setup_Initial.png" width="500px">
+<img src="images/Setup_Initial_1.png" width="500px">
 
 ^^^
 
