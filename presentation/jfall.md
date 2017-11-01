@@ -9,7 +9,7 @@
 | - | - |
 | <img src="images/Effi-Bennekers-2.0-280x280.jpg"> | <img src="images/Eggie-van-Buiten-280x280.jpg"> |
 | Effi Bennekers | Eggie van Buiten |
-| IT Chapter Lead<br/>Engineering @ ING | Developer @ ING |
+| Software Engineer @ ING | Software Engineer @ ING |
 
 ^^^
 
@@ -110,22 +110,8 @@ From https://twitter.github.io/scala_school/:
 
 ---
 
+
 ## Load balancing
-
-Weather API 2.0:
-
-```json
-{
-    "condition": "...",
-    "temperature": "...",
-    "windForce": "...",
-    "windDirection": "..."
-}
-```
-
-^^^
-
-### Load balancing
 
 <img src="images/Setup_Initial_1.png" width="500px">
 
@@ -245,6 +231,17 @@ CompletableFuture<ResponseEntity<String>> getRetry() {
 ---
 
 ## Failover
+
+Weather API 2.0:
+
+```json
+{
+    "condition": "...",
+    "temperature": "...",
+    "windForce": "...",
+    "windDirection": "..."
+}
+```
 
 Weather API 1.0:
 
