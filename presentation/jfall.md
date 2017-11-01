@@ -330,4 +330,4 @@ https://www.linkedin.com/in/effibennekers/
 Eggie van Buiten
 Eggie.van.Buiten@ingbank.com
 
-Disclaimer: The views and opinions expressed in this article are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
+Disclaimer: The views and opinions expressed in this presentation are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
