@@ -57,7 +57,7 @@ Note:
 
 ### Weather API use case
 
-<img src="images/Setup_initial.png">
+<img src="images/Setup_Initial.png">
 
 * One instance of the client API
 * Two instances of the weather service API
@@ -92,15 +92,12 @@ Finagle is an extensible RPC system for the JVM, used to construct high-concurre
 
 Weather API 2.0:
 
-```java
-@GetMapping("/weather")
-public ResponseEntity<WeatherReport> getReport() {
-    final WeatherReport report = new WeatherReport();
-    report.setCondition(...);
-    report.setTemperature(...);
-    report.setWindForce(...);
-    report.setWindDirection(...);
-    return ResponseEntity.ok(report);
+```json
+{
+    "condition": "...",
+    "temperature": "...",
+    "windForce": "...",
+    "windDirection": "..."
 }
 ```
 
@@ -108,7 +105,13 @@ public ResponseEntity<WeatherReport> getReport() {
 
 ### Load balancing
 
-<img src="images/Setup_Loadbalancing.png" width="500px">
+<img src="images/Setup_Loadbalancing_1.png" width="500px">
+
+^^^
+
+### Load balancing
+
+<img src="images/Setup_Loadbalancing_2.png" width="500px">
 
 ---
 
@@ -122,15 +125,10 @@ public ResponseEntity<WeatherReport> getReport() {
 
 Weather API 1.0:
 
-```java
-@GetMapping("/weather")
-public ResponseEntity<WeatherReport> getReport() {
-    final WeatherReport report = new WeatherReport();
-    report.setCondition(...);
-    report.setTemperature(...);
-    #report.setWindForce(...); //DOES NOT WORK
-    #report.setWindDirection(...); //DOES NOT WORK
-    return ResponseEntity.ok(report);
+```json
+{
+    "condition": "...",
+    "temperature": "..."
 }
 ```
 
