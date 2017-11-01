@@ -4,10 +4,8 @@ import com.twitter.finagle.Service;
 import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
-import com.twitter.finagle.service.RetryBudget;
 import com.twitter.finagle.service.RetryBudget$;
 import com.twitter.finagle.service.RetryFilter;
-import com.twitter.finagle.service.RetryPolicy;
 import com.twitter.finagle.service.SimpleRetryPolicy;
 import com.twitter.finagle.stats.NullStatsReceiver$;
 import com.twitter.finagle.util.DefaultTimer$;
@@ -15,7 +13,6 @@ import com.twitter.util.Duration;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,11 +27,17 @@ public class FinagleRetryController extends BaseFinagleController {
 
     private Service<Request, Response> client;
 
-    @Autowired
     public FinagleRetryController() {
-        RetryBudget budget = RetryBudget$.MODULE$.apply();
+        RetryFilter<Request, Response> retryFilter =
+                new RetryFilter<>(createPolicy(),
+                        DefaultTimer$.MODULE$.twitter(), NullStatsReceiver$.MODULE$,
+                        RetryBudget$.MODULE$.apply());
 
-        RetryPolicy<Tuple2<Request, Try<Response>>> policy = new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>() {
+        client = retryFilter.andThen(HostFilter$.MODULE$.client().newService("weather1:8080", "retry"));
+    }
+
+    private SimpleRetryPolicy<Tuple2<Request, Try<Response>>> createPolicy() {
+        return new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>() {
             public Duration backoffAt(int retry) {
                 return Duration.fromMilliseconds(retry * 10);
             }
@@ -44,20 +47,14 @@ public class FinagleRetryController extends BaseFinagleController {
                 return tryResponse.isReturn() && tryResponse.get().getStatusCode() == 404;
             }
         };
-
-        RetryFilter<Request, Response> retryFilter =
-                new RetryFilter<>(policy, DefaultTimer$.MODULE$.twitter(), NullStatsReceiver$.MODULE$, budget);
-
-        String connectionString = "weather1:8080";
-        client = retryFilter.andThen(HostFilter$.MODULE$.client().newService(connectionString, "retry"));
     }
 
     @GetMapping("/api/finagle/retry")
     public CompletableFuture<ResponseEntity<String>> getRetry(HttpServletResponse httpServletResponse) {
-        Request primaryRequest = Request.apply(Method.Get(), "/weather");
-        primaryRequest.host("localhost");
+        Request request = Request.apply(Method.Get(), "/weather");
+        request.host("localhost");
 
-        Future<Response> futureResponse = client.apply(primaryRequest);
+        Future<Response> futureResponse = client.apply(request);
         return toSpringResponse(futureResponse, httpServletResponse);
     }
 }

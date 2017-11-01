@@ -125,11 +125,106 @@ Weather API 2.0:
 
 <img src="images/Setup_Loadbalancing_2.png" width="500px">
 
+^^^
+
+### Load balancing 
+#### client setup
+
+```java
+    private Service<Request, Response> client;
+
+    public FinagleLoadbalanceController() {
+        String connectionString =
+          "weather1:8080,weather2:8080";
+        client =
+          HostFilter$.MODULE$.client()
+          .newService(connectionString, "loadbalancer");
+    }
+```
+
+^^^
+
+### Load balancing 
+#### send request 
+
+```java
+@GetMapping(value = "/api/finagle/loadbalancing")
+CompletableFuture<ResponseEntity<String>> loadbalance(){
+    
+    Request request = Request.apply(Method.Get(), "/weather");
+    request.host("localhost");
+
+    Future<Response> futureResponse = client.apply(request);
+    return toSpringResponse(futureResponse);
+}
+```
+
 ---
 
-## Retry
+### Retry
 
 <img src="images/Setup_Retry.png" width="500px">
+
+^^^
+
+## Retry
+#### client setup
+
+```java
+private Service<Request, Response> client;
+
+public FinagleRetryController() {
+  RetryFilter<Request, Response> retryFilter =
+    new RetryFilter<>(
+      createRetryPolicy(),
+      DefaultTimer$.MODULE$.twitter(),
+      NullStatsReceiver$.MODULE$,
+      RetryBudget$.MODULE$.apply());
+
+  client =
+   retryFilter.andThen(
+        HostFilter$.MODULE$.client()
+          .newService("weather1:8080", "retry"));
+}
+```
+
+^^^
+
+## Retry
+#### retry policy
+
+```java
+SimpleRetryPolicy<...> createPolicy() {
+ return
+   new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>(){
+     public Duration backoffAt(int retry) {
+        return Duration.fromMilliseconds(retry * 10);
+     }
+     
+     public boolean shouldRetry
+       (Tuple2<Request, Try<Response>> requestTryResponse) {
+         Try<Response> tryResponse = requestTryResponse._2;
+         return tryResponse.isReturn() &&
+                tryResponse.get().getStatusCode() == 404;
+     }
+   };
+}
+```
+
+^^^
+
+## Retry
+#### send request
+```java
+@GetMapping("/api/finagle/retry")
+CompletableFuture<ResponseEntity<String>> getRetry() {
+    Request request = Request.apply(Method.Get(), "/weather");
+    request.host("localhost");
+
+    Future<Response> futureResponse = client.apply(request);
+    return toSpringResponse(futureResponse, httpServletResponse);
+}
+```
 
 ---
 
@@ -151,9 +246,56 @@ Weather API 1.0:
 <img src="images/Setup_Failover_1.png" width="500px">
 
 ^^^
+
 ### Failover
 
 <img src="images/Setup_Failover_2.png" width="500px">
+
+^^^
+
+### Failover
+#### client setup
+
+```java
+    private Service<Request, Response> primaryClient;
+    private Service<Request, Response> secondaryClient;
+
+    public FinagleFailoverController() {
+        primaryClient = HostFilter$.MODULE$.client()
+               .withSessionQualifier().noFailFast()
+               .newService("weather1:8080,weather2:8080",
+                           "primary");
+
+        secondaryClient = HostFilter$.MODULE$.client()
+                 .newService("oldweather:8080", "secondary");
+    }
+```
+
+^^^
+
+### Failover
+#### send request
+
+```java
+@GetMapping("/api/finagle/failover")
+CompletableFuture<ResponseEntity<String>> getFailover() {
+  Request primaryRequest = Request.apply( // ...
+  Future<Try<Response>> tryableFutureResponse =
+    primaryClient.apply(primaryRequest).liftToTry();
+  
+  Future<Response> futureResponse =
+    tryableFutureResponse.flatMap(tryResponse -> {
+      if (isValidResponse(tryResponse)) {
+        return Future.value(tryResponse.get());
+      } else {
+        Request secondaryRequest = Request.apply( / ...
+        return secondaryClient.apply(secondaryRequest);
+      }
+   });
+  return toSpringResponse(futureResponse);
+}
+```
+
 
 ---
 
