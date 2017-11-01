@@ -4,15 +4,15 @@ import com.twitter.finagle.Service;
 import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
-import com.twitter.finagle.param.HighResTimer$;
-import com.twitter.finagle.service.Backoff$;
 import com.twitter.finagle.service.RetryBudget;
+import com.twitter.finagle.service.RetryBudget$;
 import com.twitter.finagle.service.RetryFilter;
 import com.twitter.finagle.service.RetryPolicy;
-import com.twitter.finagle.stats.StatsReceiver;
+import com.twitter.finagle.service.SimpleRetryPolicy;
+import com.twitter.finagle.stats.NullStatsReceiver$;
+import com.twitter.finagle.util.DefaultTimer$;
 import com.twitter.util.Duration;
 import com.twitter.util.Future;
-import com.twitter.util.Timer;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
 import org.effiandeggie.jfall.instances.Instance;
@@ -41,10 +41,24 @@ public class FinagleRetryController extends BaseFinagleController {
         String connectionString = instancesToConnectionString(instance);
         //"http://effi:8080"
 
-        client = HostFilter$.MODULE$.client()
-                .withSession().acquisitionTimeout(Duration.fromMilliseconds(1500))
-                .withRequestTimeout(Duration.fromMilliseconds(60))
-                .newService(connectionString, "retry");
+        RetryBudget budget = RetryBudget$.MODULE$.apply();
+
+        RetryPolicy<Tuple2<Request, Try<Response>>> policy = new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>() {
+
+            public Duration backoffAt(int retry) {
+                return Duration.fromMilliseconds(retry * 10);
+            }
+
+            public boolean shouldRetry(Tuple2<Request, Try<Response>> requestTryResponse) {
+                Try<Response> tryResponse = requestTryResponse._2;
+                return tryResponse.isReturn() && tryResponse.get().getStatusCode() == 404;
+            }
+        };
+
+        RetryFilter<Request, Response> retryFilter =
+                new RetryFilter<>(policy, DefaultTimer$.MODULE$.twitter(), NullStatsReceiver$.MODULE$, budget);
+
+        client = retryFilter.andThen(HostFilter$.MODULE$.client().newService(connectionString, "retry"));
     }
 
     @GetMapping("/api/finagle/retry")
