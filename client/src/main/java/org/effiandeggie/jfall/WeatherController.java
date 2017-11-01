@@ -2,6 +2,7 @@ package org.effiandeggie.jfall;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.routing.HttpRoute;
@@ -20,6 +21,8 @@ public class WeatherController {
 
     private CloseableHttpClient httpClient;
 
+    private static final int TIMEOUT_IN_MILISECIONDS = 1500;
+
     public WeatherController() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(10);
@@ -27,8 +30,13 @@ public class WeatherController {
 
         HttpHost host = new HttpHost("weather1", 8080);
         cm.setMaxPerRoute(new HttpRoute(host), 10);
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(TIMEOUT_IN_MILISECIONDS)
+                .setConnectionRequestTimeout(TIMEOUT_IN_MILISECIONDS)
+                .setConnectionRequestTimeout(TIMEOUT_IN_MILISECIONDS).build();
 
-        httpClient = HttpClients.custom().setConnectionManager(cm).build();
+
+        httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig).setConnectionManager(cm).build();
     }
 
     @GetMapping(value = "/api/weather")
