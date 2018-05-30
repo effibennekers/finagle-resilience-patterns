@@ -5,6 +5,7 @@ var windowSize = 10;
 var instances = [];
 var instanceTable = {};
 
+var isRunning = false;
 
 $(document).ready(function () {
     $('input[id="windowSize"]').val(windowSize);
@@ -127,10 +128,12 @@ function addInstanceToHtml(instance, index) {
 var eventId = 0;
 
 function registerEvent(event) {
-    events.push(event);
-    var instance = instanceTable[event.instance];
-    if (instance) {
-        instance.tps++;
+    if (isRunning) {
+        events.push(event);
+        var instance = instanceTable[event.instance];
+        if (instance) {
+            instance.tps++;
+        }
     }
 }
 
@@ -141,6 +144,7 @@ $(function () {
 var testIntervalId;
 
 function startTest(path) {
+    isRunning = true;
     $("#stopTest").prop("disabled", false);
     $('.start-test').each(function () {
         $(this).prop("disabled", true)
@@ -155,29 +159,33 @@ function startTest(path) {
             },
             url: path,
             success: function (data) {
-                var weather = JSON.parse(data);
-                if (!weather.windForce) {
-                    weather.windForce = "";
+                if (isRunning) {
+                    var weather = JSON.parse(data);
+                    if (!weather.windForce) {
+                        weather.windForce = "";
+                    }
+                    if (!weather.windDirection) {
+                        weather.windDirection = "";
+                    }
+                    $("#temperature").text(weather.temperature);
+                    $("#condition").text(weather.condition);
+                    $("#windforce").text(weather.windForce);
+                    $("#winddirection").text(weather.windDirection);
                 }
-                if (!weather.windDirection) {
-                    weather.windDirection = "";
-                }
-                $("#temperature").text(weather.temperature);
-                $("#condition").text(weather.condition);
-                $("#windforce").text(weather.windForce);
-                $("#winddirection").text(weather.windDirection);
 
             },
             complete: function (x) {
-                var end = new Date().getTime();
-                var duration = end - start;
-                var event = {
-                    instance: x.getResponseHeader("instance"),
-                    httpStatus: x.status,
-                    duration: duration,
-                    id: eventId++
-                };
-                registerEvent(event);
+                if (isRunning) {
+                    var end = new Date().getTime();
+                    var duration = end - start;
+                    var event = {
+                        instance: x.getResponseHeader("instance"),
+                        httpStatus: x.status,
+                        duration: duration,
+                        id: eventId++
+                    };
+                    registerEvent(event);
+                }
 
             }
         });
@@ -185,7 +193,17 @@ function startTest(path) {
 }
 
 function stopTest() {
+    isRunning = false;
     clearInterval(testIntervalId);
+    events = [];
+    $("#temperature").text('');
+    $("#condition").text('');
+    $("#windforce").text('');
+    $("#winddirection").text('');
+    instances.forEach(function (instance, index) {
+        instance.tps = 0;
+    });
+    refreshDisplay();
     $('.start-test').each(function () {
         $(this).prop("disabled", false)
     });
@@ -206,6 +224,7 @@ function refreshDisplay() {
             failureCounter: 0
         };
     }
+
 
     instances.forEach(function (instance, index) {
         $("#tps_" + index).text(instance.tps);
@@ -296,10 +315,6 @@ $(function () {
     });
     $("#finaglestartretry").click(function () {
         startTest("/api/finagle/retry");
-    });
-    $("#reset").click(function () {
-        events = [];
-        refreshDisplay();
     });
     $("#refreshWindowSize").click(function () {
         windowSize = $("#windowSize").val();
