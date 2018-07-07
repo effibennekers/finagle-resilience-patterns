@@ -6,6 +6,18 @@
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/jquery-ui/jquery-ui.js"></script>
     <script src="/app.js"></script>
+
+    <script type="application/javascript">
+        var left = 200;
+        var width = 500;
+        var height = 400;
+
+        left += window.screenX;
+        console.log("opening webcam.html");
+        window.open("webcam.html",'_blank',
+            'resizable=1,scrollbars=0,fullscreen=0,height=' + height + ',width=' + width +
+            ', left=' + left + ', toolbar=0,titlebar=0,menubar=0,location=0,status=0');
+    </script>
 </head>
 <body>
 <noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
