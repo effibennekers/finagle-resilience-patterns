@@ -28,6 +28,7 @@ function updateSimulation(index, data) {
     $('input[id="SimulationRandom_' + index + '"]').val(data.random);
     $('input[id="SimulationRandomMultiplier_' + index + '"]').val(data.randomMultiplier);
     $('input[id="FailureRate_' + index + '"]').val(data.failureRate);
+    $("#dialog_" + index).dialog("close");
 }
 
 function addInstanceToHtml(instance, index) {
