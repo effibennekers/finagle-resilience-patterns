@@ -14,4 +14,5 @@ public class Instance {
     public String getKey() {
         return host + ":" + port;
     }
+
 }
