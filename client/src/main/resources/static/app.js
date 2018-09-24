@@ -28,7 +28,6 @@ function updateSimulation(index, data) {
     $('input[id="SimulationRandom_' + index + '"]').val(data.random);
     $('input[id="SimulationRandomMultiplier_' + index + '"]').val(data.randomMultiplier);
     $('input[id="FailureRate_' + index + '"]').val(data.failureRate);
-    $("#dialog_" + index).dialog("close");
 }
 
 function addInstanceToHtml(instance, index) {
@@ -94,7 +93,6 @@ function addInstanceToHtml(instance, index) {
             $.get("http://" + instance.host + ":" + instance.port + "/simulation", function (data) {
                 updateSimulation(index, data);
             }, "json");
-
         }
     });
     $("#dialogOpener_" + index).click(function () {
@@ -121,6 +119,7 @@ function addInstanceToHtml(instance, index) {
             'dataType': 'json'
         }, function (data) {
             updateSimulation(index, data);
+            $("#dialog_" + index).dialog("close");
         });
         return false;
     });
