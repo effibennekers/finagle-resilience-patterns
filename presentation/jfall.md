@@ -139,7 +139,7 @@ From https://twitter.github.io/scala_school/:
         String connectionString =
           "weather1:8080,weather2:8080";
         client =
-          HostFilter$.MODULE$.client()
+          Http$.MODULE$.client()
           .newService(connectionString, "loadbalancer");
     }
 ```
@@ -185,7 +185,7 @@ public FinagleRetryController() {
 
   client =
    retryFilter.andThen(
-        HostFilter$.MODULE$.client()
+        Http$.MODULE$.client()
           .newService("weather1:8080", "retry"));
 }
 ```
@@ -274,12 +274,11 @@ Weather API 1.0:
     private Service<Request, Response> secondaryClient;
 
     public FinagleFailoverController() {
-        primaryClient = HostFilter$.MODULE$.client()
-               .withSessionQualifier().noFailFast()
+        primaryClient = Http$.MODULE$.client()
                .newService("weather1:8080,weather2:8080",
                            "primary");
 
-        secondaryClient = HostFilter$.MODULE$.client()
+        secondaryClient = Http$.MODULE$.client()
                  .newService("oldweather:8080", "secondary");
     }
 ```
@@ -287,24 +286,43 @@ Weather API 1.0:
 ^^^
 
 ### Failover
-#### send request
+#### send request to primary
 
 ```java
 @GetMapping("/api/finagle/failover")
 CompletableFuture<ResponseEntity<String>> getFailover() {
-  Request primaryRequest = createRequest();
-  Future<Try<Response>> tryableFutureResponse =
-    primaryClient.apply(primaryRequest).liftToTry();
-  
-  Future<Response> futureResponse =
-    tryableFutureResponse.flatMap(tryResponse -> {
-      if (isValidResponse(tryResponse)) {
-        return Future.value(tryResponse.get());
-      } else {
-        Request secondaryRequest = createRequest();
-        return secondaryClient.apply(secondaryRequest);
+  Request request = createRequest();
+
+  Future<Response> primaryFutureResponse =
+    primaryClient.apply(request).rescue(
+      new Function<Throwable, Future<Response>>() {
+        @Override
+        public Future<Response> apply(Throwable t) {
+          return secondaryClient.apply(request);
+        }
       }
-   });
+    );
+  //....
+  }
+```  
+
+---
+
+### Failover
+#### fail over to secondary
+
+```java
+@GetMapping("/api/finagle/failover")
+CompletableFuture<ResponseEntity<String>> getFailover() {
+  // Future<Response> primaryFutureResponse = ...
+  Future<Response> futureResponse =
+    primaryFutureResponse.flatMap(primaryResponse -> {
+      if (primaryResponse.getStatusCode() == 200) {
+        return Future.value(primaryResponse);
+      } else {
+        return secondaryClient.apply(request);
+      }
+    });
   return toSpringResponse(futureResponse);
 }
 ```

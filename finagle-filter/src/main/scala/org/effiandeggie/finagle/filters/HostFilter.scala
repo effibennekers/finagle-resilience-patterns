@@ -1,7 +1,7 @@
 package org.effiandeggie.finagle.filters
 
 import com.twitter.finagle
-import com.twitter.finagle._
+import com.twitter.finagle.{Http => FinagleHttp, _}
 import com.twitter.finagle.client.Transporter
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.Stack.Role
@@ -10,7 +10,7 @@ import com.twitter.finagle.Address.Inet
 import com.twitter.util.Future
 
 
-class HostFilter(val address: Address) extends SimpleFilter[Request, Response] {
+class Http(val address: Address) extends SimpleFilter[Request, Response] {
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     service(request)
       .rescue({
@@ -30,11 +30,11 @@ class HostFilter(val address: Address) extends SimpleFilter[Request, Response] {
 }
 
 
-object HostFilter {
+object Http {
 
-  def client(): Http.Client = {
-    val stackWithHost = Http.client.stack.insertAfter(LoadBalancerFactory.role, module)
-    Http.client.copy(stack = stackWithHost)
+  def client(): FinagleHttp.Client = {
+    val stackWithHost = FinagleHttp.client.stack.insertAfter(LoadBalancerFactory.role, module)
+    FinagleHttp.client.copy(stack = stackWithHost)
   }
 
 
@@ -45,13 +45,13 @@ object HostFilter {
     new finagle.Stack.Module1[Transporter.EndpointAddr, ServiceFactory[Request, Response]] {
       override def make(_addr: Transporter.EndpointAddr, next: ServiceFactory[Request, Response]): ServiceFactory[Request, Response] = {
         val Transporter.EndpointAddr(addr) = _addr
-        val hostFilter = new HostFilter(addr)
+        val hostFilter = new Http(addr)
         hostFilter.andThen(next)
       }
 
       val description = "Add host header"
 
-      override def role = HostFilter.role
+      override def role = Http.role
     }
 
 }

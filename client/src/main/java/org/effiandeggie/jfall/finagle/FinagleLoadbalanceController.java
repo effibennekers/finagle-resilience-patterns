@@ -5,7 +5,7 @@ import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
 import com.twitter.util.Future;
-import org.effiandeggie.finagle.filters.HostFilter$;
+import org.effiandeggie.finagle.filters.Http$;
 import org.effiandeggie.jfall.instances.Instance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,7 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
     private Service<Request, Response> client;
 
     public FinagleLoadbalanceController(Instance[] instances) {
-        client = HostFilter$.MODULE$.client().newService(connectionString(instances[0], instances[1]), "loadbalancer");
+        client = Http$.MODULE$.client().newService(connectionString(instances[0], instances[1]), "loadbalancer");
     }
 
     @GetMapping(value = "/api/finagle/loadbalancing")

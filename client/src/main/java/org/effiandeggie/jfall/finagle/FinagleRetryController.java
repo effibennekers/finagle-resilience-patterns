@@ -12,7 +12,7 @@ import com.twitter.finagle.util.DefaultTimer$;
 import com.twitter.util.Duration;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
-import org.effiandeggie.finagle.filters.HostFilter$;
+import org.effiandeggie.finagle.filters.Http$;
 import org.effiandeggie.jfall.instances.Instance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +36,7 @@ public class FinagleRetryController extends BaseFinagleController {
                         DefaultTimer$.MODULE$.twitter(), NullStatsReceiver$.MODULE$,
                         RetryBudget$.MODULE$.apply());
 
-        client = retryFilter.andThen(HostFilter$.MODULE$.client().newService(connectionString(instances[0]), "retry"));
+        client = retryFilter.andThen(Http$.MODULE$.client().newService(connectionString(instances[0]), "retry"));
     }
 
     private SimpleRetryPolicy<Tuple2<Request, Try<Response>>> createPolicy() {
