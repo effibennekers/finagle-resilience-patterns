@@ -9,6 +9,7 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.effiandeggie.jfall.instances.Instance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,19 +17,23 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static java.lang.String.format;
+
 @RestController
 public class WeatherController {
 
+    private final Instance instance;
     private CloseableHttpClient httpClient;
 
     private static final int TIMEOUT_IN_MILISECIONDS = 1500;
 
-    public WeatherController() {
+    public WeatherController(Instance[] instances) {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(10);
         cm.setDefaultMaxPerRoute(10);
+        instance = instances[0];
 
-        HttpHost host = new HttpHost("weather1", 8080);
+        HttpHost host = new HttpHost(instance.getHost(), instance.getPort());
         cm.setMaxPerRoute(new HttpRoute(host), 10);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(TIMEOUT_IN_MILISECIONDS)
@@ -41,8 +46,8 @@ public class WeatherController {
 
     @GetMapping(value = "/api/weather")
     public ResponseEntity<String> loadbalance(HttpServletResponse httpServletResponse) {
-        HttpGet get = new HttpGet("http://weather1:8080/weather");
-        httpServletResponse.setHeader("instance", "weather1");
+        HttpGet get = new HttpGet(format("http://%s:%d/weather", instance.getHost(), instance.getPort()));
+        httpServletResponse.setHeader("instance", instance.getName());
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 200) {
