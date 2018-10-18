@@ -138,9 +138,8 @@ From https://twitter.github.io/scala_school/:
     public FinagleLoadbalanceController() {
         String connectionString =
           "weather1:8080,weather2:8080";
-        client =
-          HostFilter$.MODULE$.client()
-          .newService(connectionString, "loadbalancer");
+        client = Http.client()
+         .newService(connectionString, "loadbalancer");
     }
 ```
 
@@ -177,16 +176,15 @@ private Service<Request, Response> client;
 
 public FinagleRetryController() {
   RetryFilter<Request, Response> retryFilter =
-    new RetryFilter<>(
+    new RetryFilter<Request, Response>(
       createRetryPolicy(),
-      DefaultTimer$.MODULE$.twitter(),
-      NullStatsReceiver$.MODULE$,
-      RetryBudget$.MODULE$.apply());
+      DefaultTimer.getInstance(),
+      NullStatsReceiver.get(),
+      RetryBudget.apply());
 
-  client =
-   retryFilter.andThen(
-        HostFilter$.MODULE$.client()
-          .newService("weather1:8080", "retry"));
+  client = retryFilter.andThen(
+    Http.client()
+      .newService("weather1:8080", "retry"));
 }
 ```
 
@@ -196,7 +194,7 @@ public FinagleRetryController() {
 #### retry policy
 
 ```java
-SimpleRetryPolicy<...> createPolicy() {
+SimpleRetryPolicy<...> createRetryPolicy() {
  return
    new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>(){
      public Duration backoffAt(int retry) {
@@ -207,7 +205,7 @@ SimpleRetryPolicy<...> createPolicy() {
        (Tuple2<Request, Try<Response>> requestTryResponse) {
          Try<Response> tryResponse = requestTryResponse._2;
          return tryResponse.isReturn() &&
-                tryResponse.get().getStatusCode() == 404;
+                tryResponse.get().getStatusCode() == 503;
      }
    };
 }
@@ -274,13 +272,14 @@ Weather API 1.0:
     private Service<Request, Response> secondaryClient;
 
     public FinagleFailoverController() {
-        primaryClient = HostFilter$.MODULE$.client()
-               .withSessionQualifier().noFailFast()
-               .newService("weather1:8080,weather2:8080",
-                           "primary");
+        primaryClient =
+          Http.client()
+           .newService("weather1:8080,weather2:8080",
+              "primary");
 
-        secondaryClient = HostFilter$.MODULE$.client()
-                 .newService("oldweather:8080", "secondary");
+        secondaryClient =
+         Http.client()
+          .newService("oldweather:8080", "secondary");
     }
 ```
 
@@ -292,19 +291,19 @@ Weather API 1.0:
 ```java
 @GetMapping("/api/finagle/failover")
 CompletableFuture<ResponseEntity<String>> getFailover() {
-  Request primaryRequest = createRequest();
-  Future<Try<Response>> tryableFutureResponse =
-    primaryClient.apply(primaryRequest).liftToTry();
-  
+  Request request = createRequest();
+
   Future<Response> futureResponse =
-    tryableFutureResponse.flatMap(tryResponse -> {
-      if (isValidResponse(tryResponse)) {
-        return Future.value(tryResponse.get());
-      } else {
-        Request secondaryRequest = createRequest();
-        return secondaryClient.apply(secondaryRequest);
-      }
-   });
+    primaryClient.apply(request)
+      .rescue(
+        partialFunction(x -> secondaryClient.apply(request)))
+      .flatMap(primaryResponse -> {
+        if (primaryResponse.getStatusCode() == 200) {
+          return Future.value(primaryResponse);
+        } else {
+          return secondaryClient.apply(request);
+        }
+      });
   return toSpringResponse(futureResponse);
 }
 ```
