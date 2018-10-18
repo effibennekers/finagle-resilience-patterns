@@ -4,15 +4,15 @@ import com.twitter.finagle.Service;
 import com.twitter.finagle.http.Method;
 import com.twitter.finagle.http.Request;
 import com.twitter.finagle.http.Response;
-import com.twitter.finagle.service.RetryBudget$;
+import com.twitter.finagle.service.RetryBudget;
 import com.twitter.finagle.service.RetryFilter;
 import com.twitter.finagle.service.SimpleRetryPolicy;
-import com.twitter.finagle.stats.NullStatsReceiver$;
-import com.twitter.finagle.util.DefaultTimer$;
+import com.twitter.finagle.stats.NullStatsReceiver;
+import com.twitter.finagle.util.DefaultTimer;
 import com.twitter.util.Duration;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
-import org.effiandeggie.finagle.filters.HostFilter$;
+import org.effiandeggie.finagle.clients.Http;
 import org.effiandeggie.jfall.instances.Instance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +32,11 @@ public class FinagleRetryController extends BaseFinagleController {
 
     public FinagleRetryController(Instance[] instances) {
         RetryFilter<Request, Response> retryFilter =
-                new RetryFilter<>(createPolicy(),
-                        DefaultTimer$.MODULE$.twitter(), NullStatsReceiver$.MODULE$,
-                        RetryBudget$.MODULE$.apply());
+                new RetryFilter<Request, Response>(createPolicy(),
+                        DefaultTimer.getInstance(), NullStatsReceiver.get(),
+                        RetryBudget.apply());
 
-        client = retryFilter.andThen(HostFilter$.MODULE$.client().newService(connectionString(instances[0]), "retry"));
+        client = retryFilter.andThen(Http.client().newService(connectionString(instances[0]), "retry"));
     }
 
     private SimpleRetryPolicy<Tuple2<Request, Try<Response>>> createPolicy() {
