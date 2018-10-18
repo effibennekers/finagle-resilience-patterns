@@ -7,6 +7,7 @@ import com.twitter.finagle.http.Response;
 import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.filters.HostFilter$;
+import org.effiandeggie.jfall.instances.Instance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,18 +15,21 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.CompletableFuture;
 
+import static org.effiandeggie.jfall.instances.InstanceManager.connectionString;
+
 @RestController
 public class FinagleFailoverController extends BaseFinagleController {
 
     private Service<Request, Response> primaryClient;
     private Service<Request, Response> secondaryClient;
 
-    public FinagleFailoverController() {
+
+    public FinagleFailoverController(Instance[] instances) {
         primaryClient = HostFilter$.MODULE$.client()
                 .withSessionQualifier().noFailFast()
-                .newService("weather1:8080,weather2:8080", "primary");
+                .newService(connectionString(instances[0], instances[1]), "primary");
 
-        secondaryClient = HostFilter$.MODULE$.client().newService("oldweather:8080", "secondary");
+        secondaryClient = HostFilter$.MODULE$.client().newService(connectionString(instances[2]), "secondary");
     }
 
     @GetMapping("/api/finagle/failover")

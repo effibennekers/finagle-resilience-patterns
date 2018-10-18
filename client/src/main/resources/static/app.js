@@ -93,7 +93,6 @@ function addInstanceToHtml(instance, index) {
             $.get("http://" + instance.host + ":" + instance.port + "/simulation", function (data) {
                 updateSimulation(index, data);
             }, "json");
-
         }
     });
     $("#dialogOpener_" + index).click(function () {
@@ -120,6 +119,7 @@ function addInstanceToHtml(instance, index) {
             'dataType': 'json'
         }, function (data) {
             updateSimulation(index, data);
+            $("#dialog_" + index).dialog("close");
         });
         return false;
     });
