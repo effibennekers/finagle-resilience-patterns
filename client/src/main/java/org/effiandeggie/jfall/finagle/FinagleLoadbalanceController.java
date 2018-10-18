@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.CompletableFuture;
 
 import static org.effiandeggie.jfall.instances.InstanceManager.connectionString;
@@ -26,11 +25,11 @@ public class FinagleLoadbalanceController extends BaseFinagleController {
     }
 
     @GetMapping(value = "/api/finagle/loadbalancing")
-    public CompletableFuture<ResponseEntity<String>> loadbalance(HttpServletResponse httpServletResponse) {
+    public CompletableFuture<ResponseEntity<String>> loadbalance() {
         Request request = Request.apply(Method.Get(), "/weather");
         request.host("localhost");
 
         Future<Response> futureResponse = client.apply(request);
-        return toSpringResponse(futureResponse, httpServletResponse);
+        return toSpringResponse(futureResponse);
     }
 }
