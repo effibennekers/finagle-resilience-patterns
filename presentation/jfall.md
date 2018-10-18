@@ -313,14 +313,10 @@ CompletableFuture<ResponseEntity<String>> getFailover() {
 
 ## Recap
 
-* Resilience
-* Load balancing
-* Retry
-* Failover
-* Finagle
+<img src="images/247.jpg" width="300px">
 
-Note:
-So if you take your uptime seriously and want a solution fast, use Finagle! 
+* You need to develop with a resilience mindset
+* If you take your uptime seriously and want a solution fast, use Finagle!
 
 ---
 
