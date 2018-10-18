@@ -274,7 +274,8 @@ Weather API 1.0:
     public FinagleFailoverController() {
         primaryClient =
           Http.client()
-           .newService("weather1:8080,weather2:8080", "primary");
+           .newService("weather1:8080,weather2:8080",
+              "primary");
 
         secondaryClient =
          Http.client()
@@ -290,19 +291,19 @@ Weather API 1.0:
 ```java
 @GetMapping("/api/finagle/failover")
 CompletableFuture<ResponseEntity<String>> getFailover() {
-  Request primaryRequest = createRequest();
-  Future<Try<Response>> tryableFutureResponse =
-    primaryClient.apply(primaryRequest).liftToTry();
-  
+  Request request = createRequest();
+
   Future<Response> futureResponse =
-    tryableFutureResponse.flatMap(tryResponse -> {
-      if (isValidResponse(tryResponse)) {
-        return Future.value(tryResponse.get());
-      } else {
-        Request secondaryRequest = createRequest();
-        return secondaryClient.apply(secondaryRequest);
-      }
-   });
+    primaryClient.apply(request)
+      .rescue(
+        partialFunction(x -> secondaryClient.apply(request)))
+      .flatMap(primaryResponse -> {
+        if (primaryResponse.getStatusCode() == 200) {
+          return Future.value(primaryResponse);
+        } else {
+          return secondaryClient.apply(request);
+        }
+      });
   return toSpringResponse(futureResponse);
 }
 ```
