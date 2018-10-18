@@ -32,14 +32,15 @@ public class FinagleRetryController extends BaseFinagleController {
 
     public FinagleRetryController(Instance[] instances) {
         RetryFilter<Request, Response> retryFilter =
-                new RetryFilter<Request, Response>(createPolicy(),
-                        DefaultTimer.getInstance(), NullStatsReceiver.get(),
+                new RetryFilter<Request, Response>(createRetryPolicy(),
+                        DefaultTimer.getInstance(),
+                        NullStatsReceiver.get(),
                         RetryBudget.apply());
 
         client = retryFilter.andThen(Http.client().newService(connectionString(instances[0]), "retry"));
     }
 
-    private SimpleRetryPolicy<Tuple2<Request, Try<Response>>> createPolicy() {
+    private SimpleRetryPolicy<Tuple2<Request, Try<Response>>> createRetryPolicy() {
         return new SimpleRetryPolicy<Tuple2<Request, Try<Response>>>() {
             public Duration backoffAt(int retry) {
                 return Duration.fromMilliseconds(retry * 10);

@@ -26,7 +26,6 @@ public class FinagleFailoverController extends BaseFinagleController {
 
     public FinagleFailoverController(Instance[] instances) {
         primaryClient = Http.client()
-                .withSessionQualifier().noFailFast()
                 .newService(connectionString(instances[0], instances[1]), "primary");
 
         secondaryClient = Http.client().newService(connectionString(instances[2]), "secondary");
