@@ -205,7 +205,7 @@ SimpleRetryPolicy<...> createRetryPolicy() {
        (Tuple2<Request, Try<Response>> requestTryResponse) {
          Try<Response> tryResponse = requestTryResponse._2;
          return tryResponse.isReturn() &&
-                tryResponse.get().getStatusCode() == 404;
+                tryResponse.get().getStatusCode() == 503;
      }
    };
 }

@@ -2,6 +2,7 @@ package jfall.finagle;
 
 import com.ing.example.jfall.pojo.WeatherReport;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +28,7 @@ public class WeatherController {
         simulateHeavyProcessing();
 
         if (processSimulationParameters.simulateFaiure()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
 
         } else {
             final WeatherReport report = new WeatherReport();

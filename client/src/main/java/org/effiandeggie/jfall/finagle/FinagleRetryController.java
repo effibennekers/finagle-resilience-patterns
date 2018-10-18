@@ -14,6 +14,7 @@ import com.twitter.util.Future;
 import com.twitter.util.Try;
 import org.effiandeggie.finagle.clients.Http;
 import org.effiandeggie.jfall.instances.Instance;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,7 +49,7 @@ public class FinagleRetryController extends BaseFinagleController {
 
             public boolean shouldRetry(Tuple2<Request, Try<Response>> requestTryResponse) {
                 Try<Response> tryResponse = requestTryResponse._2;
-                return tryResponse.isReturn() && tryResponse.get().getStatusCode() == 404;
+                return tryResponse.isReturn() && tryResponse.get().getStatusCode() == 503;
             }
         };
     }
