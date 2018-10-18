@@ -1,9 +1,9 @@
 name := "finagle-filter"
-organization := "org.effieandeggie"
+organization := "org.effiandeggie"
 
 version := "0.0.1-SNAPSHOT"
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.6"
 
 libraryDependencies += "com.twitter" % "finagle-core_2.12" % "7.1.0"
 libraryDependencies += "com.twitter" % "finagle-http_2.12" % "7.1.0"
