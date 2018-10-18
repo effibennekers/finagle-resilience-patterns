@@ -323,11 +323,14 @@ CompletableFuture<ResponseEntity<String>> getFailover() {
 ## Questions?
 
 Effi Bennekers
-Efraim.Bennekers@ing.nl
+Efraim.Bennekers@ing.com
 https://www.linkedin.com/in/effibennekers/
 @ebennekers
 
 Eggie van Buiten
-Eggie.van.Buiten@ingbank.com
+Eggie.van.Buiten@ing.com
+
+Code and presentation at
+https://github.com/effibennekers/finagle-resilience-patterns/
 
 Disclaimer: The views and opinions expressed in this presentation are those of the authors and do not necessarily reflect the official policy or position of ING Bank.
