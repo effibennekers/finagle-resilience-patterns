@@ -104,9 +104,8 @@ Finagle is an extensible RPC system for the JVM, used to construct high-concurre
 
 ## Finagle
 
-From https://twitter.github.io/scala_school/:
 
-<img src="images/finagle-filter-server.png" width="700px">
+<img src="images/finagle-picture.bmp" width="700px">
 
 ---
 
