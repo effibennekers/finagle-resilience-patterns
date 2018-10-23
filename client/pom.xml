@@ -19,7 +19,7 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.effieandeggie</groupId>
+            <groupId>org.effiandeggie</groupId>
             <artifactId>finagle-filter_${scala-compiler.version}</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
