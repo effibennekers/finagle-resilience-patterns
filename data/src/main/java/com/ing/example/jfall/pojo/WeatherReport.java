@@ -1,12 +1,7 @@
 package com.ing.example.jfall.pojo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
 
-
-@Getter
-@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WeatherReport {
 
@@ -63,5 +58,36 @@ public class WeatherReport {
     private Integer windForce;
     private WindDirection windDirection;
 
+    public Condition getCondition() {
+        return condition;
+    }
+
+    public void setCondition(Condition condition) {
+        this.condition = condition;
+    }
+
+    public Integer getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Integer temperature) {
+        this.temperature = temperature;
+    }
+
+    public Integer getWindForce() {
+        return windForce;
+    }
+
+    public void setWindForce(Integer windForce) {
+        this.windForce = windForce;
+    }
+
+    public WindDirection getWindDirection() {
+        return windDirection;
+    }
+
+    public void setWindDirection(WindDirection windDirection) {
+        this.windDirection = windDirection;
+    }
 
 }
