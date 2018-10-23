@@ -1,8 +1,9 @@
 package org.effiandeggie.jfall;
 
-import lombok.extern.slf4j.Slf4j;
 import org.effiandeggie.jfall.instances.Instance;
 import org.effiandeggie.jfall.instances.InstanceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,8 +19,9 @@ import static java.lang.String.format;
 
 @SpringBootApplication
 @EnableScheduling
-@Slf4j
 public class Application {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -33,7 +35,7 @@ public class Application {
     @Bean
     public Instance[] instances() {
         final List<Instance> instanceList = new LinkedList<>();
-        System.err.println ("\n\nstring: " + instanceString);
+        LOG.info("Instance: " + instanceString);
         for (String instance : instanceString.split(",")) {
             Matcher matcher = HOST_PATTERN.matcher(instance);
             if (matcher.find()) {
@@ -51,7 +53,7 @@ public class Application {
     @Bean
     public InstanceManager instanceManager(Instance[] instances) {
         for (int i = 0; i < instances.length; i++) {
-            log.info(format("Instance %d with name %s, host %s and port %d",
+            LOG.info(format("Instance %d with name %s, host %s and port %d",
                     i, instances[i].getName(), instances[i].getHost(), instances[i].getPort()));
         }
         return new InstanceManager(instances);

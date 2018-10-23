@@ -2,7 +2,6 @@ package org.effiandeggie.jfall.instances;
 
 import com.twitter.finagle.http.HeaderMap;
 import com.twitter.finagle.http.Response;
-import lombok.Getter;
 import scala.Option;
 
 import java.util.Arrays;
@@ -15,8 +14,11 @@ public class InstanceManager {
 
     private final Map<String, Instance> instanceTable = new HashMap<>();
 
-    @Getter
     private final Instance[] instances;
+
+    public Instance[] getInstances() {
+        return instances;
+    }
 
     public InstanceManager(final Instance[] instances) {
         this.instances = instances;
