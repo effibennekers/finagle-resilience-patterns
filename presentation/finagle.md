@@ -102,10 +102,21 @@ Finagle is an extensible RPC system for the JVM, used to construct high-concurre
 
 ^^^
 
-## Finagle
+## Finagle service
 
+<img src="images/finagle-service.png" width="700px">
 
-<img src="images/finagle-picture.bmp" width="700px">
+^^^
+
+## Finagle filter
+
+<img src="images/finagle-filter.png" width="700px">
+
+^^^
+
+## Finagle service and filter combined
+
+<img src="images/finagle-filter-and-service.png" width="700px">
 
 ---
 
