@@ -6,3 +6,5 @@ First go to the finagle-filter directory and run
 In the root project, do a ```mvn clean install```
 
 To run the client: go to the client directory and do a ```mvn spring-boot:run```
+
+To show the presentation: go to the presentation directory and start your favorite webserver from there.
